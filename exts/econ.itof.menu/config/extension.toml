@@ -1,0 +1,19 @@
+[package]
+version = "1.0.0"
+title = "e-con DepthVista Helix iToF Cameras"
+description = "Adds e-con DepthVista Helix iToF (USB / GMSL) to Create > Sensors > Camera and Depth Sensors."
+category = "Simulation"
+keywords = ["isaac", "sensor", "camera", "depth", "tof", "iToF", "e-con", "DepthVista", "Helix"]
+authors = ["e-con Systems"]
+repository = ""
+readme = "docs/README.md"
+
+# Pure-Python extension — no native build. Depends only on the stock menu helpers
+# used by NVIDIA's own isaacsim.sensors.camera.ui extension.
+[dependencies]
+"omni.kit.menu.utils" = {}
+"omni.usd" = {}
+"isaacsim.gui.components" = {}
+
+[[python.module]]
+name = "econ.itof.menu"
