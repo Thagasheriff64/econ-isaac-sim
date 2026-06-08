@@ -22,7 +22,7 @@ if "%SCRIPT_DIR:~-1%"=="\" set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 
 REM ── Configuration (override via env or 1st arg) ──────────────────────────────
 if not defined REPO_URL set "REPO_URL=%~1"
-if not defined REPO_URL set "REPO_URL=https://github.com/<org>/econ-isaac-sim.git"
+if not defined REPO_URL set "REPO_URL=https://github.com/Thagasheriff64/econ-isaac-sim.git"
 if not defined EXT_NAME set "EXT_NAME=econ.itof.menu"
 
 REM If run from inside a clone (exts\<EXT_NAME> beside the script), install in place.
@@ -72,6 +72,9 @@ if not defined ISAACSIM_PATH (
         "%LOCALAPPDATA%\ov\pkg\isaac_sim-*"
         "%USERPROFILE%\isaacsim"
         "%USERPROFILE%\isaac-sim"
+        "%USERPROFILE%\Downloads\isaacsim"
+        "%USERPROFILE%\Downloads\isaac-sim*"
+        "%USERPROFILE%\ROBOTICS\downloads\isaacsim"
         "C:\isaacsim"
         "C:\isaac-sim"
     ) do (

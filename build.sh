@@ -21,7 +21,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Configuration (override via env or 1st arg) ───────────────────────────────
-REPO_URL="${REPO_URL:-${1:-https://github.com/<org>/econ-isaac-sim.git}}"
+REPO_URL="${REPO_URL:-${1:-https://github.com/Thagasheriff64/econ-isaac-sim.git}}"
 EXT_NAME="${EXT_NAME:-econ.itof.menu}"
 
 # If this script already lives inside a clone (exts/<EXT_NAME> present beside it),
@@ -76,11 +76,16 @@ info "Found extension: ${EXT_DIR}"
 # ── 3. Locate the Isaac Sim install (holds isaac-sim.sh) ──────────────────────
 ISAACSIM_PATH="${ISAACSIM_PATH:-${ISAAC_SIM_PATH:-}}"
 if [ -z "${ISAACSIM_PATH}" ]; then
+    # Common explicit locations (Omniverse Launcher pkg + standalone-zip extractions).
     for cand in \
         "${HOME}"/.local/share/ov/pkg/isaac-sim-* \
         "${HOME}"/.local/share/ov/pkg/isaac_sim-* \
         "${HOME}/isaacsim" \
         "${HOME}/isaac-sim" \
+        "${HOME}"/[Dd]ownloads/isaacsim \
+        "${HOME}"/[Dd]ownloads/isaac-sim* \
+        "${HOME}"/*/[Dd]ownloads/isaacsim \
+        "${HOME}/ROBOTICS/downloads/isaacsim" \
         /opt/isaacsim \
         /opt/isaac-sim ; do
         if [ -x "${cand}/isaac-sim.sh" ]; then
@@ -88,6 +93,11 @@ if [ -z "${ISAACSIM_PATH}" ]; then
             break
         fi
     done
+fi
+# Last resort: search under $HOME (depth-limited so it stays fast).
+if [ -z "${ISAACSIM_PATH}" ]; then
+    found="$(find "${HOME}" -maxdepth 5 -name isaac-sim.sh -type f 2>/dev/null | head -n 1)"
+    [ -n "${found}" ] && ISAACSIM_PATH="$(dirname "${found}")"
 fi
 
 if [ -z "${ISAACSIM_PATH}" ] || [ ! -x "${ISAACSIM_PATH}/isaac-sim.sh" ]; then

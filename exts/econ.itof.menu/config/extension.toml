@@ -5,7 +5,7 @@ description = "Adds e-con DepthVista Helix iToF (USB / GMSL) to Create > Sensors
 category = "Simulation"
 keywords = ["isaac", "sensor", "camera", "depth", "tof", "iToF", "e-con", "DepthVista", "Helix"]
 authors = ["e-con Systems"]
-repository = ""
+repository = "https://github.com/Thagasheriff64/econ-isaac-sim"
 readme = "docs/README.md"
 
 # Pure-Python extension — no native build. Depends only on the stock menu helpers

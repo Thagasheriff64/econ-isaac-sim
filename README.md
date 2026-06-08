@@ -41,16 +41,16 @@ git commit -m "e-con DepthVista Helix iToF — Isaac Sim integration"
 
 # create an empty repo on github.com first (e.g. econ-systems/econ-isaac-sim), then:
 git branch -M main
-git remote add origin https://github.com/<org>/econ-isaac-sim.git
+git remote add origin https://github.com/Thagasheriff64/econ-isaac-sim.git
 git push -u origin main
 ```
 
 > The USDs are ~2 MB each (fine for plain git). If you later add much larger binaries, consider
 > [Git LFS](https://git-lfs.com): `git lfs track "*.usd"`.
 
-After pushing, set the clone URL in both installers so end users don't have to pass it:
-edit the `REPO_URL=` line near the top of **`build.sh`** and **`build.bat`** to your repo URL,
-commit, and push again.
+The clone URL is already baked into **`build.sh`** / **`build.bat`** (`REPO_URL=…
+Thagasheriff64/econ-isaac-sim.git`), so end users don't pass anything. If you move/rename the
+repo, update that line in both files and push again.
 
 ---
 
@@ -60,7 +60,7 @@ Requirements on the target PC: **git** and **Isaac Sim 5.1** installed.
 
 ### Linux
 ```bash
-git clone https://github.com/<org>/econ-isaac-sim.git
+git clone https://github.com/Thagasheriff64/econ-isaac-sim.git
 cd econ-isaac-sim
 ./build.sh
 # if Isaac Sim isn't auto-found:  ISAACSIM_PATH=/path/to/isaacsim ./build.sh
@@ -68,7 +68,7 @@ cd econ-isaac-sim
 
 ### Windows
 ```bat
-git clone https://github.com/<org>/econ-isaac-sim.git
+git clone https://github.com/Thagasheriff64/econ-isaac-sim.git
 cd econ-isaac-sim
 build.bat
 :: if Isaac Sim isn't auto-found:  set ISAACSIM_PATH=C:\path\to\isaacsim  &  build.bat
