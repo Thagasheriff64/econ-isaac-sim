@@ -13,7 +13,6 @@ readme = "docs/README.md"
 [dependencies]
 "omni.kit.menu.utils" = {}
 "omni.usd" = {}
-"isaacsim.gui.components" = {}
 
 [[python.module]]
 name = "econ.itof.menu"
