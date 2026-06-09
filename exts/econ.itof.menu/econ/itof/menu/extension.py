@@ -12,6 +12,7 @@ import omni.ext
 import omni.kit.app
 import omni.usd
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Usd, UsdGeom
 
 VENDOR = "e-con"
 CAMERAS = [
@@ -70,13 +71,37 @@ class Extension(omni.ext.IExt):
         stage = omni.usd.get_context().get_stage()
         if stage is None:
             return
-        prim_path = self._next_free_path(stage, prim_prefix)
+        prim_path = self._next_free_path(stage, self._stage_root(stage) + prim_prefix)
         try:
-            stage.DefinePrim(prim_path, "Xform").GetReferences().AddReference(
-                usd_path.replace(os.sep, "/"))
+            xform = stage.DefinePrim(prim_path, "Xform")
+            xform.GetReferences().AddReference(usd_path.replace(os.sep, "/"))
+            self._compensate_units(stage, xform, usd_path)
             omni.usd.get_context().get_selection().set_selected_prim_paths([prim_path], True)
         except Exception as exc:  # never let a click crash the menu
             carb.log_error(f"[econ.itof.menu] failed to add {usd_path}: {exc}")
+
+    @staticmethod
+    def _compensate_units(stage, xform, usd_path: str):
+        """USD references do not auto-rescale across a metersPerUnit mismatch, so a
+        mm asset (metersPerUnit=0.001) lands 1000x too large in a meters stage.
+        Bake the ratio onto the wrapper Xform's scale to compensate."""
+        stage_mpu = UsdGeom.GetStageMetersPerUnit(stage) or 1.0
+        asset_mpu = UsdGeom.GetStageMetersPerUnit(Usd.Stage.Open(usd_path)) or 1.0
+        ratio = asset_mpu / stage_mpu
+        if abs(ratio - 1.0) < 1e-9:
+            return
+        UsdGeom.Xformable(xform).AddScaleOp().Set((ratio, ratio, ratio))
+
+    @staticmethod
+    def _stage_root(stage) -> str:
+        """Parent the camera under the stage default prim (like the built-in
+        sensors do), falling back to /World, then the pseudo-root."""
+        dp = stage.GetDefaultPrim()
+        if dp and dp.IsValid():
+            return dp.GetPath().pathString
+        if stage.GetPrimAtPath("/World").IsValid():
+            return "/World"
+        return ""
 
     @staticmethod
     def _next_free_path(stage, base: str) -> str:
