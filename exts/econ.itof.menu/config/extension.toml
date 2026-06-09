@@ -6,7 +6,6 @@ category = "Simulation"
 keywords = ["isaac", "sensor", "camera", "depth", "tof", "iToF", "e-con", "DepthVista", "Helix"]
 authors = ["e-con Systems"]
 repository = "https://github.com/Thagasheriff64/econ-isaac-sim"
-readme = "docs/README.md"
 
 [dependencies]
 "omni.kit.menu.utils" = {}

@@ -53,7 +53,8 @@ class Extension(omni.ext.IExt):
         self._menu_items = [
             MenuItemDescription(name="Sensors", glyph=_sensor_glyph(), sub_menu=[
                 MenuItemDescription(name="Camera and Depth Sensors", sub_menu=[
-                    MenuItemDescription(name=VENDOR, sub_menu=leaves),
+                    # "@first" = MenuItemOrder.FIRST -> e-con sits at the top of the vendor list.
+                MenuItemDescription(name=VENDOR, appear_after="@first", sub_menu=leaves),
                 ]),
             ]),
         ]
