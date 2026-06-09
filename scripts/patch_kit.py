@@ -66,5 +66,5 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(2)
-    appdir, ext = sys.argv[1], sys.argv[2]
+    appdir, ext = os.path.expanduser(sys.argv[1]), sys.argv[2]
     sys.exit(uninstall(appdir, ext) if "--uninstall" in sys.argv[3:] else install(appdir, ext))
