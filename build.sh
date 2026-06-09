@@ -122,6 +122,5 @@ cat <<EOF
           - DepthVista Helix iToF (USB)
           - DepthVista Helix iToF (GMSL)
 
-  Uninstall: python3 scripts/patch_kit.py "${ISAACSIM_PATH}/apps" ${EXT_NAME} --uninstall
-             rm "${EXTSUSER}/${EXT_NAME}"
+  Uninstall (reverts everything): ./uninstall.sh
 EOF

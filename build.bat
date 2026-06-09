@@ -120,6 +120,5 @@ echo   Then: Create -^> Sensors -^> Camera and Depth Sensors -^> e-con
 echo           - DepthVista Helix iToF ^(USB^)
 echo           - DepthVista Helix iToF ^(GMSL^)
 echo.
-echo   Uninstall: "!PYEXE!" "%INSTALL_DIR%\scripts\patch_kit.py" "%ISAACSIM_PATH%\apps" %EXT_NAME% --uninstall
-echo             then delete "%EXTSUSER%\%EXT_NAME%"
+echo   Uninstall (reverts everything): uninstall.bat
 exit /b 0

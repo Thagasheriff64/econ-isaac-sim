@@ -39,10 +39,13 @@ is now built into Isaac Sim and loads on every launch.
 3. Pick **DepthVista Helix iToF (USB)** or **(GMSL)** — the camera drops into your scene.
 
 ## Uninstall
+One command — reverts every change and returns Isaac Sim to stock:
 ```bash
-python3 scripts/patch_kit.py "<isaac-sim-folder>/apps" econ.itof.menu --uninstall
-rm "<isaac-sim-folder>/extsUser/econ.itof.menu"        # Windows: delete the folder
+./uninstall.sh          # Linux
+uninstall.bat           # Windows
 ```
+(It finds Isaac Sim the same way the installer does, restores the `.kit` files, and removes the
+extension.)
 
 ## Notes
 - Re-run the installer after **reinstalling or updating Isaac Sim**.
