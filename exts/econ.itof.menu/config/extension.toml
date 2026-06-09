@@ -8,8 +8,6 @@ authors = ["e-con Systems"]
 repository = "https://github.com/Thagasheriff64/econ-isaac-sim"
 readme = "docs/README.md"
 
-# Pure-Python extension — no native build. Depends only on the stock menu helpers
-# used by NVIDIA's own isaacsim.sensors.camera.ui extension.
 [dependencies]
 "omni.kit.menu.utils" = {}
 "omni.usd" = {}
