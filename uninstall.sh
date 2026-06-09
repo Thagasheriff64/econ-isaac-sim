@@ -32,8 +32,9 @@ if [ -z "${ISAACSIM_PATH}" ]; then
 fi
 if [ -z "${ISAACSIM_PATH}" ]; then
     info "Searching for isaac-sim.sh under ${HOME} …"
-    # -print -quit avoids the SIGPIPE that `| head` would cause under `set -o pipefail`.
-    found="$(find "${HOME}" -maxdepth 6 -name isaac-sim.sh -type f -print -quit 2>/dev/null || true)"
+    # Prune Trash/.cache; -print -quit avoids the SIGPIPE a `| head` would cause under pipefail.
+    found="$(find "${HOME}" -maxdepth 7 -type d \( -name Trash -o -name .cache \) -prune \
+                 -o -type f -name isaac-sim.sh -print -quit 2>/dev/null || true)"
     [ -n "${found}" ] && ISAACSIM_PATH="$(dirname "${found}")"
 fi
 while [ -z "${ISAACSIM_PATH}" ] || [ ! -x "${ISAACSIM_PATH}/isaac-sim.sh" ]; do
