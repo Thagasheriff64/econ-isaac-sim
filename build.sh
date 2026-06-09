@@ -2,14 +2,9 @@
 # ──────────────────────────────────────────────────────────────────────────────
 # e-con DepthVista Helix iToF — Isaac Sim installer (Linux)
 #
-# ZED-style install: clone the e-con GitHub repo (USDs + the pure-Python
-# `econ.itof.menu` extension) and register it with Isaac Sim, so the camera shows
-# up under Create -> Sensors -> Camera and Depth Sensors -> e-con on every launch.
-#
-# Unlike ZED's build.sh there is NOTHING to compile — the extension is pure Python,
-# so this script only clones and registers. Registration is done by generating a
-# launcher that passes `--ext-folder/--enable`, because editing Isaac Sim 5.1's
-# persistent config is unreliable (silently reset; see IsaacSim issues #376/#377).
+# Clones/verifies the repo, locates Isaac Sim, and registers the econ.itof.menu extension
+# so the cameras appear under Create -> Sensors -> Camera and Depth Sensors -> e-con on
+# every launch. Pure Python — nothing to compile.
 #
 # Usage:
 #   ./build.sh                         # clone (if needed) + register
@@ -99,10 +94,9 @@ done
 info "Using Isaac Sim at: ${ISAACSIM_PATH}"
 
 # ── 4. Register so it auto-loads on every normal launch ──────────────────────
-# Isaac Sim 5.1's persistent user config silently drops ext folders/flags (#376/#377), so:
 #   (a) symlink the extension into <isaac>/extsUser  (already on the search path), and
-#   (b) add it to the Full app's .kit [dependencies] — read fresh each launch, never rewritten,
-#       exactly how the built-in vendors (Intel/Stereolabs) load.
+#   (b) add it to the Full app's .kit [dependencies]  (read fresh each launch, never rewritten;
+#       the persistent user config is unreliable on Isaac Sim 5.1).
 EXTSUSER="${ISAACSIM_PATH}/extsUser"
 mkdir -p "${EXTSUSER}"
 ln -sfn "${EXT_DIR}" "${EXTSUSER}/${EXT_NAME}"

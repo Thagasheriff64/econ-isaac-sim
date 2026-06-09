@@ -2,14 +2,9 @@
 REM ───────────────────────────────────────────────────────────────────────────
 REM e-con DepthVista Helix iToF — Isaac Sim installer (Windows)
 REM
-REM ZED-style install: clone the e-con GitHub repo (USDs + the pure-Python
-REM `econ.itof.menu` extension) and register it with Isaac Sim, so the camera
-REM shows up under Create -> Sensors -> Camera and Depth Sensors -> e-con.
-REM
-REM Unlike ZED's build.bat there is NOTHING to compile — the extension is pure
-REM Python, so this script only clones and registers. Registration is done by
-REM generating a launcher that passes --ext-folder/--enable, because editing
-REM Isaac Sim 5.1's persistent config is unreliable (IsaacSim issues #376/#377).
+REM Clones/verifies the repo, locates Isaac Sim, and registers the econ.itof.menu extension
+REM so the cameras appear under Create -> Sensors -> Camera and Depth Sensors -> e-con on
+REM every launch. Pure Python — nothing to compile.
 REM
 REM Usage:
 REM   build.bat                 - clone (if needed) + register
@@ -97,9 +92,8 @@ if not exist "%ISAACSIM_PATH%\isaac-sim.bat" echo [ERROR] No isaac-sim.bat in "%
 echo [INFO] Using Isaac Sim at: %ISAACSIM_PATH%
 
 REM ── 4. Register so it auto-loads on every normal launch ──────────────────────
-REM Isaac Sim 5.1's persistent config drops ext folders/flags (#376/#377), so we copy the
-REM extension into <isaac>\extsUser (on the search path) and add it to the Full app's .kit
-REM [dependencies], which Isaac reads fresh each launch - exactly how the built-in vendors load.
+REM Copy the extension into <isaac>\extsUser (on the search path) and add it to the Full app's
+REM .kit [dependencies], which Isaac reads fresh each launch (the persistent config is unreliable).
 set "EXTSUSER=%ISAACSIM_PATH%\extsUser"
 if not exist "%EXTSUSER%" mkdir "%EXTSUSER%"
 echo [INFO] Copying extension into %EXTSUSER%\%EXT_NAME% ...

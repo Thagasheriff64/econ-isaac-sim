@@ -1,9 +1,7 @@
 """Adds the e-con DepthVista Helix iToF cameras to Isaac Sim's Create menu.
 
-Uses the stable ``omni.kit.menu.utils.MenuItemDescription`` API. Kit menus merge by
-name, so our ``e-con`` vendor joins the existing
-``Create > Sensors > Camera and Depth Sensors`` path next to Intel/Stereolabs. Each leaf
-references the matching USD into the stage.
+The menu items are added under Create > Sensors > Camera and Depth Sensors > e-con;
+each one references the matching USD into the current stage.
 """
 
 import gc
@@ -23,7 +21,7 @@ CAMERAS = [
 
 
 def _sensor_glyph():
-    """Path to the stock 'Sensors' menu icon, so our merged item keeps the glyph."""
+    """Path to the existing Sensors menu icon, so the merged item keeps its glyph."""
     try:
         mgr = omni.kit.app.get_app().get_extension_manager()
         for e in mgr.get_extensions():
@@ -49,12 +47,10 @@ class Extension(omni.ext.IExt):
             for cam in CAMERAS
         ]
 
-        # Nested by name so add_menu_items merges into the existing menu path.
         self._menu_items = [
             MenuItemDescription(name="Sensors", glyph=_sensor_glyph(), sub_menu=[
                 MenuItemDescription(name="Camera and Depth Sensors", sub_menu=[
-                    # "@first" = MenuItemOrder.FIRST -> e-con sits at the top of the vendor list.
-                MenuItemDescription(name=VENDOR, appear_after="@first", sub_menu=leaves),
+                    MenuItemDescription(name=VENDOR, appear_after="@first", sub_menu=leaves),
                 ]),
             ]),
         ]

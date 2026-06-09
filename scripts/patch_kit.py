@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 """Add (or remove) the e-con extension as a dependency of Isaac Sim's Full .kit apps.
 
-Isaac Sim 5.1's persistent user config silently drops ext folders / enabled flags
-(IsaacSim issues #376/#377), so we register the extension the config-bug-proof way:
-as a `[dependencies]` entry in the app `.kit` files, which Isaac reads fresh from disk
-on every launch and never rewrites — exactly how the built-in vendors load.
+The .kit files are read fresh from disk on every launch, so a [dependencies] entry there
+auto-loads the extension reliably (the persistent user config does not, on Isaac Sim 5.1).
 
 Usage:
     patch_kit.py <isaac_apps_dir> <ext_name> [--uninstall]
 
-Idempotent. A one-time `<kit>.bak` is written before the first edit so --uninstall
-(or manual restore) is clean.
+Idempotent. A one-time <kit>.bak is written before the first edit so --uninstall is clean.
 """
 import glob
 import os

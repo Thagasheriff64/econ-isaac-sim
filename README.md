@@ -2,8 +2,7 @@
 
 Adds the **e-con DepthVista Helix iToF** cameras to NVIDIA Isaac Sim. After a one-time install,
 the cameras appear in the viewport menu under
-**Create → Sensors → Camera and Depth Sensors → e-con**, just like the built-in Intel / Orbbec /
-Stereolabs cameras.
+**Create → Sensors → Camera and Depth Sensors → e-con**, alongside the other camera vendors.
 
 Two models are included:
 - **DepthVista Helix iToF (USB)**
