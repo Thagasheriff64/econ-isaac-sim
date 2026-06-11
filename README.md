@@ -11,26 +11,6 @@ one-time installation, the camera appears in the viewport menu under
 - NVIDIA **Isaac Sim 5.1**
 - **git** and **python3** (`python` on Windows)
 
-## Camera variants
-
-Two USD builds of the camera are included in
-[`exts/econ.itof.menu/assets/`](exts/econ.itof.menu/assets):
-
-| File | Connector |
-|------|-----------|
-| `DEPTH_VISTA_HELIX_GMSL.usd` | GMSL |
-| `DEPTH_VISTA_HELIX_USB.usd`  | USB |
-
-Isaac Sim shows a single entry — **DepthVista Helix iToF** (the GMSL build). If you need the USB
-build, reference
-[`DEPTH_VISTA_HELIX_USB.usd`](exts/econ.itof.menu/assets/DEPTH_VISTA_HELIX_USB.usd) into your
-stage directly.
-
-When added, the camera is placed under the stage's default prim (`/World`) with its full sensor
-hierarchy intact.
-
-![Stage hierarchy of the added camera](docs/images/02-stage-hierarchy.png)
-
 ## Installation
 
 **Linux**
@@ -56,6 +36,26 @@ is now built into Isaac Sim and loads on every launch.
 1. If Isaac Sim is already running, close and relaunch it.
 2. Open **Create → Sensors → Camera and Depth Sensors → e-con**.
 3. Select **DepthVista Helix iToF**. The camera is added to your scene under `/World`.
+
+## Camera variants
+
+Two USD builds of the camera are included in
+[`exts/econ.itof.menu/assets/`](exts/econ.itof.menu/assets):
+
+| File | Connector |
+|------|-----------|
+| `DEPTH_VISTA_HELIX_GMSL.usd` | GMSL |
+| `DEPTH_VISTA_HELIX_USB.usd`  | USB |
+
+Isaac Sim shows a single entry — **DepthVista Helix iToF** (the GMSL build). If you need the USB
+build, reference
+[`DEPTH_VISTA_HELIX_USB.usd`](exts/econ.itof.menu/assets/DEPTH_VISTA_HELIX_USB.usd) into your
+stage directly.
+
+When added, the camera is placed under the stage's default prim (`/World`) with its full sensor
+hierarchy intact.
+
+![Stage hierarchy of the added camera](docs/images/02-stage-hierarchy.png)
 
 ## ROS 2 streaming (optional)
 
