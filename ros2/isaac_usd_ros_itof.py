@@ -120,8 +120,9 @@ _SKIP_PREFIXES = ("/OmniverseKit_", "/Render/")
 # ══════════════════════════════════════════════════════════════════════════════
 #
 # Graphs are created dynamically (the count depends on how many units are in the
-# scene), so there is no static path list — cleanup scans for top-level /ROS2*
-# prims instead.  The hotkey watcher is the only long-lived runtime object.
+# scene) and all live under the GRAPH_ROOT scope, so cleanup just removes that
+# scope (plus any legacy root-level /ROS2* prims).  The hotkey watcher is the
+# only long-lived runtime object.
 
 _hotkey_watcher = None
 
@@ -238,6 +239,17 @@ async def _wait(frames: int):
 # OMNIGRAPH BUILDER
 # ══════════════════════════════════════════════════════════════════════════════
 
+# Parent Scope that holds every graph this script creates, so they appear nested
+# under a single prim in the stage instead of cluttering the root.
+GRAPH_ROOT = "/ROS2_iToF"
+
+
+def _ensure_graph_root(stage):
+    """Create the parent Scope that all ROS 2 graphs live under."""
+    if not stage.GetPrimAtPath(GRAPH_ROOT).IsValid():
+        stage.DefinePrim(GRAPH_ROOT, "Scope")
+
+
 def _og_edit(graph_path: str, spec: dict, label: str) -> bool:
     """Create (replacing any existing) an execution OmniGraph from ``spec``.
     Returns True on success; logs and returns False on failure.
@@ -267,7 +279,7 @@ def _setup_shared(tf_targets: list, parent_prim: str = ""):
     if parent_prim:
         values.append(("TF.inputs:parentPrim", [parent_prim]))
 
-    _og_edit("/ROS2SharedGraph", {
+    _og_edit(f"{GRAPH_ROOT}/ROS2SharedGraph", {
         og.Controller.Keys.CREATE_NODES: [
             ("OnTick",  "omni.graph.action.OnPlaybackTick"),
             ("Ctx",     "isaacsim.ros2.bridge.ROS2Context"),
@@ -284,7 +296,7 @@ def _setup_shared(tf_targets: list, parent_prim: str = ""):
             ("SimTime.outputs:simulationTime", "TF.inputs:timeStamp"),
         ],
         og.Controller.Keys.SET_VALUES: values,
-    }, "/ROS2SharedGraph  /clock + /tf")
+    }, f"{GRAPH_ROOT}/ROS2SharedGraph  /clock + /tf")
 
 
 def _setup_camera_graph(graph_path: str, cam_path: str, frame_id: str,
@@ -508,11 +520,14 @@ async def _ensure_playing():
 
 
 def _remove_all_ros2_graphs(stage) -> int:
-    """Remove every top-level graph this script creates (all named ``/ROS2*``)."""
+    """Remove the graphs this script creates: the ``GRAPH_ROOT`` scope and any
+    legacy root-level ``/ROS2*`` graphs left by older runs."""
     removed = 0
     for prim in list(stage.GetPseudoRoot().GetChildren()):
         if prim.GetName().startswith("ROS2") and stage.RemovePrim(prim.GetPath()):
             removed += 1
+    if stage.GetPrimAtPath(GRAPH_ROOT).IsValid() and stage.RemovePrim(GRAPH_ROOT):
+        removed += 1
     return removed
 
 
@@ -643,7 +658,7 @@ async def main():
                 params     = cfg["params"],
                 frame_id   = unit_id,             # one flat frame per unit
                 topic_ns   = f"{ns_prefix}/{key}",
-                graph_path = f"/ROS2Camera_{graph_tag}_{key.upper()}",
+                graph_path = f"{GRAPH_ROOT}/ROS2Camera_{graph_tag}_{key.upper()}",
             )
 
         # One TF frame per unit, anchored on the highres camera (optical centre);
@@ -661,7 +676,7 @@ async def main():
             imu_prim   = imu_prim,
             imu_topic  = f"{ns_prefix}/imu",
             imu_frame  = unit_id,                 # imu shares the unit frame
-            imu_graph  = f"/ROS2ImuGraph_{graph_tag}",
+            imu_graph  = f"{GRAPH_ROOT}/ROS2ImuGraph_{graph_tag}",
             imu_print  = _imu_print_enabled(index),
         ))
         print(f"  unit[{index}] {unit_id}   {root}   IMU: {imu_prim or 'NOT FOUND'}")
@@ -680,6 +695,7 @@ async def main():
 
     # ── STEP 6 — Shared graph (/clock + /tf) ─────────────────────────────────
     print("\n[STEP 6] Shared graph …")
+    _ensure_graph_root(stage)
     tf_targets = [unit["frame_prim"] for unit in units]
     parent = TF_PARENT_PRIM if (TF_PARENT_PRIM and
                                 stage.GetPrimAtPath(TF_PARENT_PRIM).IsValid()) else ""
@@ -737,7 +753,8 @@ def _print_summary(units: list):
                    if unit["imu_print"] and overlay_axes else "")
             print(f"     {unit['imu_topic']:<22} Imu 416 Hz{tag}")
         print()
-    print(f"  /ROS2SharedGraph  ->  /clock  /tf   (all unit frames -> {TF_WORLD_FRAME})")
+    print(f"  {GRAPH_ROOT}/ROS2SharedGraph  ->  /clock  /tf   "
+          f"(all unit frames -> {TF_WORLD_FRAME})")
     print()
     print("  RViz depth: Normalize=OFF  highres 0.2-2.0 | longrange 0.5-6.0")
     print("  Stop: Ctrl+Alt+R (viewport focused) or teardown()")
