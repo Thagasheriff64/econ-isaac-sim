@@ -60,7 +60,13 @@ is now built into Isaac Sim and loads on every launch.
 [`ros2/isaac_usd_ros_itof.py`](ros2/isaac_usd_ros_itof.py) turns every DepthVista unit in the
 stage into a live ROS 2 publisher. It **auto-detects** all camera units (GMSL and USB) — no
 arguments — numbering them by discovery order and tagging each with its real type
-(`cam0_gmsl`, `cam1_usb`, …).
+(`cam0_gmsl`, `cam1_usb`, …). **Add as many cameras as you need** — the script generates a
+matching set of topics and graphs for every unit it finds in the stage.
+
+> **No external ROS install needed.** The script runs on the **ROS 2 Humble** libraries that
+> ship inside Isaac Sim (the `isaacsim.ros2.bridge` extension) — you don't need a system ROS
+> install or a sourced workspace just to publish. (You do need ROS 2 Humble on the consumer
+> side, e.g. to run RViz or `ros2 topic echo`.)
 
 Each unit publishes under `<ns> = /tof/cam{i}_{type}`:
 
@@ -116,6 +122,13 @@ The script builds OmniGraph action graphs in the stage that drive the ROS 2 topi
 One graph set is generated **per camera per variant** found in the stage, so adding more units
 produces correspondingly numbered topics. Set `ROS2_DOMAIN_ID` near the top of the script to
 match your shell's `ROS_DOMAIN_ID`.
+
+### Viewing in RViz
+
+In RViz (ROS 2 Humble), set the **Fixed Frame** to **`world`** — every camera's TF frame is a
+child of it, so all units share that one common frame. To rename it, change `TF_WORLD_FRAME`
+near the top of the script (and optionally set `TF_PARENT_PRIM` to a prim path, e.g. a robot
+base, to parent all frames under it).
 
 **Stop:** `Ctrl+Alt+R` (Isaac viewport focused) or call `teardown()`. **Re-run:** execute the
 file again — stale graphs and the hotkey auto-reset.
