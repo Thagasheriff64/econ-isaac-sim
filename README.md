@@ -16,15 +16,13 @@ Two USD builds of the camera are included in
 | `DEPTH_VISTA_HELIX_GMSL.usd` | GMSL |
 | `DEPTH_VISTA_HELIX_USB.usd`  | USB |
 
-The two builds are visually identical, so the Create menu exposes a single entry —
-**DepthVista Helix iToF** (the GMSL build, shown without a variant suffix) — to keep the menu
-uncluttered. Both USD files remain available in the repository. If you specifically need the USB
+Isaac Sim shows a single entry — **DepthVista Helix iToF** (the GMSL build). If you need the USB
 build, reference
 [`DEPTH_VISTA_HELIX_USB.usd`](exts/econ.itof.menu/assets/DEPTH_VISTA_HELIX_USB.usd) into your
 stage directly.
 
-When added, the camera is placed under the stage's default prim (`/World`) at true scale
-(approximately 95 × 37 × 39 mm), with its full sensor hierarchy intact.
+When added, the camera is placed under the stage's default prim (`/World`) with its full sensor
+hierarchy intact.
 
 ![Stage hierarchy of the added camera](docs/images/02-stage-hierarchy.png)
 
