@@ -120,9 +120,9 @@ _SKIP_PREFIXES = ("/OmniverseKit_", "/Render/")
 # ══════════════════════════════════════════════════════════════════════════════
 #
 # Graphs are created dynamically (the count depends on how many units are in the
-# scene) and all live under the GRAPH_ROOT scope, so cleanup just removes that
-# scope (plus any legacy root-level /ROS2* prims).  The hotkey watcher is the
-# only long-lived runtime object.
+# scene) and all live under the GRAPH_ROOT container, so cleanup just removes
+# that container (plus any legacy root-level /ROS2* prims).  The hotkey watcher
+# is the only long-lived runtime object.
 
 _hotkey_watcher = None
 
@@ -239,13 +239,18 @@ async def _wait(frames: int):
 # OMNIGRAPH BUILDER
 # ══════════════════════════════════════════════════════════════════════════════
 
-# Parent Scope that holds every graph this script creates, so they appear nested
-# under a single prim in the stage instead of cluttering the root.
-GRAPH_ROOT = "/ROS2_iToF"
+# Parent prim that holds every graph this script creates, so they appear nested
+# under a single "Graphs" node in the stage instead of cluttering the root.
+GRAPH_ROOT = "/Graphs"
 
 
 def _ensure_graph_root(stage):
-    """Create the parent Scope that all ROS 2 graphs live under."""
+    """Create the parent ``Graphs`` prim that all ROS 2 graphs live under.
+
+    A Scope is used deliberately: graphs nested inside an *OmniGraph*-typed prim
+    become subgraphs and stop receiving playback ticks (verified — the publishers
+    go silent), whereas a Scope keeps each child a first-class, ticking graph.
+    """
     if not stage.GetPrimAtPath(GRAPH_ROOT).IsValid():
         stage.DefinePrim(GRAPH_ROOT, "Scope")
 
@@ -520,8 +525,8 @@ async def _ensure_playing():
 
 
 def _remove_all_ros2_graphs(stage) -> int:
-    """Remove the graphs this script creates: the ``GRAPH_ROOT`` scope and any
-    legacy root-level ``/ROS2*`` graphs left by older runs."""
+    """Remove the graphs this script creates: the ``GRAPH_ROOT`` container and
+    any legacy root-level ``/ROS2*`` graphs left by older runs."""
     removed = 0
     for prim in list(stage.GetPseudoRoot().GetChildren()):
         if prim.GetName().startswith("ROS2") and stage.RemovePrim(prim.GetPath()):
