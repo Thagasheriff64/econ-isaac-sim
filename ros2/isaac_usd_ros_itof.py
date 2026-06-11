@@ -2,14 +2,15 @@
 """ROS 2 publisher for e-con DepthVista Helix ToF cameras in Isaac Sim 5.1.
 
 DepthVista units are auto-detected in the stage — there is no variant argument.
-Every unit found becomes its own camera, numbered by discovery order.  A unit
-built as the suffixed GMSL/USB asset is tagged with its type; the unsuffixed
-Create-menu build carries no suffix::
+A single unit is simply ``cam``; when more than one is present they are numbered
+by discovery order (``cam0``, ``cam1``, …).  A unit built as the suffixed GMSL/USB
+asset additionally carries its type tag::
 
-    cam0_gmsl, cam1_usb, …        (suffixed GMSL/USB builds)
-    cam0, cam1, …                 (unsuffixed DEPTH_VISTA_HELIX build)
+    cam                           (one unit, unsuffixed build)
+    cam0, cam1, …                 (multiple units)
+    cam_gmsl  /  cam0_usb, …      (explicit GMSL/USB builds)
 
-Each unit publishes (``<ns>`` = ``/tof/cam{i}[_{type}]``)::
+Each unit publishes (``<ns>`` = ``/tof/cam[{i}][_{type}]``)::
 
     <ns>/highres/{depth, camera_info, points}     1280x960  0.2-2.0 m
     <ns>/longrange/{depth, camera_info, points}    640x480  0.5-6.0 m
@@ -1012,8 +1013,10 @@ async def main():
     print(f"  found {len(roots)} unit(s)")
 
     units = []
+    multi = len(roots) > 1            # only number cameras when there is more than one
     for index, (root, type_tag) in enumerate(roots):
-        unit_id   = f"cam{index}_{type_tag}" if type_tag else f"cam{index}"
+        base      = f"cam{index}" if multi else "cam"
+        unit_id   = f"{base}_{type_tag}" if type_tag else base
         ns_prefix = f"{TOPIC_ROOT}/{unit_id}"
         graph_tag = unit_id.upper()
 
