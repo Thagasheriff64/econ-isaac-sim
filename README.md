@@ -134,8 +134,21 @@ child of `world`, so all units share this common frame. To rename it, change `TF
 the top of the script. You can also set `TF_PARENT_PRIM` to a prim path (for example, a robot
 base) to parent all frames under that prim.
 
+### Browser depth viewer (no RViz required)
+
+If you would rather inspect depth in a browser than in RViz, set `WEB_VIEWER = True` near the top
+of the script. Alongside the ROS 2 publishers, the script then serves a page at
+`http://localhost:8211/` showing each camera's live depth, colour-mapped by distance. Hover any
+pixel to read its metric distance, and drag the range sliders to adjust the colour mapping. The
+raw metric depth is sent to the browser, so the colouring and the readout are computed
+client-side and update in real time.
+
+This runs alongside ROS 2 (it does not replace it). Relevant settings at the top of the script:
+`WEB_VIEWER`, `WEB_VIEWER_PORT`, `WEB_VIEWER_HZ`, and `WEB_VIEWER_MAX_W` (preview width cap).
+
 **Stopping:** press `Ctrl+Alt+R` with the Isaac Sim viewport focused, or call `teardown()`.
-**Re-running:** execute the file again — stale graphs and the hotkey reset automatically.
+**Re-running:** execute the file again — stale graphs, the hotkey, and the viewer reset
+automatically.
 
 ## Uninstallation
 

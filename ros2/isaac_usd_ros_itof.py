@@ -21,6 +21,10 @@ Cameras listed in ``IMU_PRINT_CAMERAS`` get an on-screen ToString -> PrintText
 readout of the IMU (axes toggled by ``IMU_{ANGULAR,LINEAR}_TO_SCREEN``), so IMU
 data can be inspected without RViz or the ros2 CLI.
 
+Setting ``WEB_VIEWER`` True additionally serves a localhost web page showing the
+live, colour-mapped depth of every camera (hover to read the metric distance),
+so depth can be inspected in a browser without RViz.  It runs alongside ROS 2.
+
 Usage (Isaac Sim Script Editor / VS Code):
     Run this file to start publishing.
     Stop   : Ctrl+Alt+R (Isaac viewport focused) or call ``teardown()``.
@@ -69,6 +73,16 @@ IMU_ANGULAR_TO_SCREEN = True   # show angVel overlay for the selected cameras
 STOP_SIM_ON_EXIT = True     # True  -> Ctrl+Alt+R / teardown() also stops the
                             #          timeline (toolbar returns to play)
                             # False -> keep the simulation playing on stop
+
+# --- Web viewer ---------------------------------------------------------------
+# Optional browser preview of the live depth feed, served from inside Isaac Sim.
+# It runs alongside ROS 2 (purely additive) and lets you inspect depth without
+# RViz: open the printed URL, hover any camera to read the metric distance, and
+# adjust the colour-mapping range.  No external dependency beyond NumPy.
+WEB_VIEWER       = False     # True -> start the localhost viewer
+WEB_VIEWER_PORT  = 8211      # served at http://localhost:<port>/
+WEB_VIEWER_HZ    = 10        # frame refresh rate (Hz)
+WEB_VIEWER_MAX_W = 640       # cap preview width (px); keeps the extra render light
 
 # Asset prim names mapped to a short type tag.  A unit is any prim whose name
 # matches one of these (or "<name>_NN" for duplicates) and has a ToF_Camera child.
@@ -122,9 +136,10 @@ _SKIP_PREFIXES = ("/OmniverseKit_", "/Render/")
 # Graphs are created dynamically (the count depends on how many units are in the
 # scene) and all live under the GRAPH_ROOT container, so cleanup just removes
 # that container (plus any legacy root-level /ROS2* prims).  The hotkey watcher
-# is the only long-lived runtime object.
+# and the optional web viewer are the only long-lived runtime objects.
 
 _hotkey_watcher = None
+_web_viewer     = None
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -540,10 +555,13 @@ def _reset_state():
     """Make re-running idempotent: drop a previous run's hotkey watcher and
     remove stale ``/ROS2*`` graphs, so the script can be executed again cleanly.
     """
-    global _hotkey_watcher
+    global _hotkey_watcher, _web_viewer
     if _hotkey_watcher is not None:
         _hotkey_watcher.destroy()
         _hotkey_watcher = None
+    if _web_viewer is not None:
+        _web_viewer.destroy()
+        _web_viewer = None
     if not _HAVE_ISAAC:
         return
     stage = omni.usd.get_context().get_stage()
@@ -603,6 +621,210 @@ class _HotkeyWatcher:
 
     def destroy(self):
         self._sub = None
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# WEB VIEWER  (optional localhost depth preview)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Runs entirely inside the Isaac Sim process and alongside ROS 2.  A Replicator
+# "distance_to_camera" annotator on each camera yields a metric depth array every
+# frame; the latest frame per camera is buffered (as 16-bit millimetres) and a
+# small threaded HTTP server hands it to the browser.  Colour-mapping, the range
+# slider and the hover-to-read-distance readout are all done client-side, so the
+# raw metric depth is preserved and the view is fully interactive.
+#
+# Threading note: annotator reads happen only on the app/update thread; the HTTP
+# thread merely serves the buffered bytes under a lock (Kit is not thread-safe).
+
+_WEB_VIEWER_HTML = """<!doctype html><html><head><meta charset="utf-8">
+<title>e-con DepthVista — depth viewer</title>
+<style>
+ body{background:#111;color:#ddd;font:13px system-ui,sans-serif;margin:16px}
+ h1{font-size:16px;font-weight:600}
+ .cams{display:flex;flex-wrap:wrap;gap:18px}
+ .cam{background:#1b1b1b;border:1px solid #333;border-radius:8px;padding:10px}
+ .cam h2{font-size:13px;margin:0 0 6px}
+ canvas{image-rendering:pixelated;background:#000;border-radius:4px;cursor:crosshair;width:100%;height:auto}
+ .ctl{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:#aaa}
+ .read{margin-top:6px;font-variant-numeric:tabular-nums}
+ .read b{color:#7ec8ff}
+ input[type=range]{width:120px}
+</style></head><body>
+<h1>e-con DepthVista — live depth (colour = distance)</h1>
+<div class="cams" id="cams"></div>
+<script>
+const HZ = __HZ__;
+function hsv(h){ // h in [0,360) -> rgb, full sat/val
+  const c=1, x=1-Math.abs((h/60)%2-1), m=0;
+  let r,g,b;
+  if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}else if(h<180){r=0;g=c;b=x}
+  else if(h<240){r=0;g=x;b=c}else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}
+  return [(r+m)*255,(g+m)*255,(b+m)*255];
+}
+async function init(){
+  const cams = await (await fetch('cameras.json')).json();
+  const root = document.getElementById('cams');
+  for(const cam of cams){
+    const box=document.createElement('div'); box.className='cam';
+    box.innerHTML=`<h2>${cam.label}  <span style="color:#888">${cam.width}×${cam.height}</span></h2>`;
+    const cv=document.createElement('canvas'); cv.width=cam.width; cv.height=cam.height;
+    cv.style.maxWidth='480px';
+    const ctx=cv.getContext('2d'); const img=ctx.createImageData(cam.width,cam.height);
+    const ctl=document.createElement('div'); ctl.className='ctl';
+    const lo=document.createElement('input'); lo.type='range'; lo.min=0; lo.max=10; lo.step=0.05; lo.value=cam.near;
+    const hi=document.createElement('input'); hi.type='range'; hi.min=0; hi.max=10; hi.step=0.05; hi.value=cam.far;
+    const lab=document.createElement('span');
+    const read=document.createElement('div'); read.className='read'; read.innerHTML='hover for distance';
+    const sync=()=>lab.textContent=`${(+lo.value).toFixed(2)}–${(+hi.value).toFixed(2)} m`; sync();
+    lo.oninput=hi.oninput=sync;
+    ctl.append('range',lo,hi,lab); box.append(cv,ctl,read); root.append(box);
+    let last=null;
+    cv.onmousemove=e=>{
+      if(!last)return;
+      const x=Math.floor(e.offsetX/cv.clientWidth*cam.width);
+      const y=Math.floor(e.offsetY/cv.clientHeight*cam.height);
+      const mm=last[y*cam.width+x];
+      read.innerHTML = mm? `(${x}, ${y}) → <b>${(mm/1000).toFixed(3)} m</b>` : `(${x}, ${y}) → <b>no return</b>`;
+    };
+    async function tick(){
+      try{
+        const buf=await (await fetch('depth/'+cam.id+'?t='+Date.now())).arrayBuffer();
+        const d=new Uint16Array(buf); last=d;
+        const near=+lo.value*1000, far=Math.max(+hi.value*1000, near+1), span=far-near;
+        const px=img.data;
+        for(let i=0;i<d.length;i++){
+          const v=d[i], o=i*4;
+          if(!v){px[o]=px[o+1]=px[o+2]=18; px[o+3]=255; continue;}
+          let t=(v-near)/span; t=t<0?0:t>1?1:t;
+          const c=hsv((1-t)*240);           // near = blue, far = red
+          px[o]=c[0]; px[o+1]=c[1]; px[o+2]=c[2]; px[o+3]=255;
+        }
+        ctx.putImageData(img,0,0);
+      }catch(_){}
+    }
+    setInterval(tick, 1000/HZ);
+  }
+}
+init();
+</script></body></html>"""
+
+
+class _WebViewer:
+    """Serve a live, colour-mapped depth preview of every camera over localhost."""
+
+    def __init__(self, units: list):
+        import threading, json
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        import numpy as np
+        import omni.replicator.core as rep
+
+        self._np = np
+        self._lock = threading.Lock()
+        self._frames = {}            # cam_id -> latest uint16-LE depth bytes
+        self._cams = []              # [{id,label,width,height,near,far,annot}]
+        self._last_pull = 0.0
+        self._sub = None
+        self._httpd = None
+
+        # One render product + depth annotator per camera (capped resolution).
+        for unit in units:
+            for key, cam in unit["cams"].items():
+                p = cam["params"]
+                scale = min(1.0, WEB_VIEWER_MAX_W / float(p["width"]))
+                vw, vh = max(1, int(p["width"] * scale)), max(1, int(p["height"] * scale))
+                try:
+                    rp = rep.create.render_product(cam["path"], (vw, vh))
+                    annot = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
+                    annot.attach(rp)
+                except Exception as exc:
+                    print(f"  [web] annotator failed for {cam['path']}: {exc}")
+                    continue
+                self._cams.append(dict(
+                    id=f"{unit['unit_id']}_{key}", label=f"{unit['unit_id']}  {key}",
+                    width=vw, height=vh, near=p["near_m"], far=p["far_m"], annot=annot))
+
+        if not self._cams:
+            raise RuntimeError("no camera annotators could be created")
+
+        meta = [{k: c[k] for k in ("id", "label", "width", "height", "near", "far")}
+                for c in self._cams]
+        html = _WEB_VIEWER_HTML.replace("__HZ__", str(int(WEB_VIEWER_HZ)))
+        viewer = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *a):       # silence per-request logging
+                pass
+
+            def _send(self, code, ctype, body: bytes):
+                self.send_response(code)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_GET(self):
+                path = self.path.split("?", 1)[0]
+                if path in ("/", "/index.html"):
+                    self._send(200, "text/html; charset=utf-8", html.encode())
+                elif path == "/cameras.json":
+                    self._send(200, "application/json", json.dumps(meta).encode())
+                elif path.startswith("/depth/"):
+                    cam_id = path[len("/depth/"):]
+                    with viewer._lock:
+                        buf = viewer._frames.get(cam_id)
+                    if buf is None:
+                        self._send(503, "text/plain", b"warming up")
+                    else:
+                        self._send(200, "application/octet-stream", buf)
+                else:
+                    self._send(404, "text/plain", b"not found")
+
+        self._httpd = ThreadingHTTPServer(("127.0.0.1", WEB_VIEWER_PORT), Handler)
+        threading.Thread(target=self._httpd.serve_forever, daemon=True).start()
+        self._sub = omni.kit.app.get_app().get_update_event_stream() \
+            .create_subscription_to_pop(self._on_update, name="ros2_itof_webviewer")
+        print(f"[web] depth viewer at http://localhost:{WEB_VIEWER_PORT}/   "
+              f"({len(self._cams)} camera(s))")
+
+    def _on_update(self, _):
+        import time
+        now = time.monotonic()
+        if now - self._last_pull < 1.0 / max(1, WEB_VIEWER_HZ):
+            return
+        self._last_pull = now
+        np = self._np
+        for cam in self._cams:
+            try:
+                data = cam["annot"].get_data()
+            except Exception:
+                continue
+            arr = np.asarray(data, dtype=np.float32)
+            if arr.size == 0:
+                continue
+            mm = arr.copy()
+            mm[~np.isfinite(mm)] = 0.0          # inf/nan -> "no return"
+            mm = np.clip(mm * 1000.0, 0, 65535).astype("<u2")
+            with self._lock:
+                self._frames[cam["id"]] = mm.tobytes()
+
+    def destroy(self):
+        if self._sub is not None:
+            self._sub = None
+        if self._httpd is not None:
+            try:
+                self._httpd.shutdown()
+                self._httpd.server_close()
+            except Exception:
+                pass
+            self._httpd = None
+        for cam in self._cams:
+            try:
+                cam["annot"].detach()
+            except Exception:
+                pass
+        self._cams = []
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -729,6 +951,16 @@ async def main():
     print("\n[STEP 9] Warming up …")
     await _wait(10)
 
+    # ── STEP 10 — Web viewer (optional) ──────────────────────────────────────
+    global _web_viewer
+    if WEB_VIEWER:
+        print("\n[STEP 10] Web viewer …")
+        try:
+            _web_viewer = _WebViewer(units)
+        except Exception as exc:
+            print(f"  [web] viewer disabled: {exc}")
+            _web_viewer = None
+
     _print_summary(units)
 
     global _hotkey_watcher
@@ -762,6 +994,8 @@ def _print_summary(units: list):
           f"(all unit frames -> {TF_WORLD_FRAME})")
     print()
     print("  RViz depth: Normalize=OFF  highres 0.2-2.0 | longrange 0.5-6.0")
+    if WEB_VIEWER and _web_viewer is not None:
+        print(f"  Web viewer: http://localhost:{WEB_VIEWER_PORT}/  (live depth, no RViz needed)")
     print("  Stop: Ctrl+Alt+R (viewport focused) or teardown()")
     print("═" * 72 + "\n")
 
@@ -774,10 +1008,13 @@ def teardown():
     """Stop publishing: drop the hotkey, remove all ROS2 graphs, and (if
     ``STOP_SIM_ON_EXIT``) stop the timeline.  Safe to call repeatedly.
     """
-    global _hotkey_watcher
+    global _hotkey_watcher, _web_viewer
     if _hotkey_watcher is not None:
         _hotkey_watcher.destroy()
         _hotkey_watcher = None
+    if _web_viewer is not None:
+        _web_viewer.destroy()
+        _web_viewer = None
 
     if _HAVE_ISAAC:
         stage = omni.usd.get_context().get_stage()
