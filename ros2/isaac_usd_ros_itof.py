@@ -22,8 +22,9 @@ readout of the IMU (axes toggled by ``IMU_{ANGULAR,LINEAR}_TO_SCREEN``), so IMU
 data can be inspected without RViz or the ros2 CLI.
 
 Setting ``WEB_VIEWER`` True additionally serves a localhost web page showing the
-live, colour-mapped depth of every camera (hover to read the metric distance),
-so depth can be inspected in a browser without RViz.  It runs alongside ROS 2.
+live, colour-mapped depth of every camera (hover to read the metric distance)
+plus an interactive 3D point cloud per camera (orbit/zoom, export to .ply), so
+the data can be inspected in a browser without RViz.  It runs alongside ROS 2.
 
 Usage (Isaac Sim Script Editor / VS Code):
     Run this file to start publishing.
@@ -645,27 +646,49 @@ _WEB_VIEWER_HTML = """<!doctype html><html><head><meta charset="utf-8">
  .cams{display:flex;flex-wrap:wrap;gap:18px}
  .cam{background:#1b1b1b;border:1px solid #333;border-radius:8px;padding:10px}
  .cam h2{font-size:13px;margin:0 0 6px}
- canvas{image-rendering:pixelated;background:#000;border-radius:4px;cursor:crosshair;width:100%;height:auto}
- .ctl{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:#aaa}
+ .cam canvas{image-rendering:pixelated;background:#000;border-radius:4px;cursor:crosshair;width:100%;height:auto}
+ .ctl{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:#aaa;flex-wrap:wrap}
  .read{margin-top:6px;font-variant-numeric:tabular-nums}
  .read b{color:#7ec8ff}
  input[type=range]{width:120px}
-</style></head><body>
+ select,button{background:#222;color:#ddd;border:1px solid #444;border-radius:4px;padding:3px 8px}
+ #pcl-canvas{width:100%;max-width:900px;height:520px;display:block;background:#0a0a0a;
+   border:1px solid #333;border-radius:8px;margin-top:8px;cursor:grab}
+ #pcl-info{color:#7ec8ff}
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+</head><body>
 <h1>e-con DepthVista — live depth (colour = distance)</h1>
 <div class="cams" id="cams"></div>
+
+<h1 style="margin-top:26px">Point cloud (colour = distance)</h1>
+<div class="ctl">
+  camera <select id="pcl-cam"></select>
+  range <input id="pcl-lo" type="range" min="0" max="10" step="0.05">
+        <input id="pcl-hi" type="range" min="0" max="10" step="0.05">
+  <span id="pcl-range"></span>
+  point <input id="pcl-size" type="range" min="1" max="6" step="0.5" value="2">
+  <button id="pcl-dl">Download .ply</button>
+  <span id="pcl-info">drag to rotate · scroll to zoom · right-drag to pan</span>
+</div>
+<canvas id="pcl-canvas"></canvas>
+
 <script>
 const HZ = __HZ__;
-function hsv(h){ // h in [0,360) -> rgb, full sat/val
-  const c=1, x=1-Math.abs((h/60)%2-1), m=0;
+function hsv(h){ // h in [0,360) -> [r,g,b] 0..255, full sat/val
+  const c=1, x=1-Math.abs((h/60)%2-1);
   let r,g,b;
   if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}else if(h<180){r=0;g=c;b=x}
   else if(h<240){r=0;g=x;b=c}else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}
-  return [(r+m)*255,(g+m)*255,(b+m)*255];
+  return [r*255,g*255,b*255];
 }
-async function init(){
-  const cams = await (await fetch('cameras.json')).json();
+let CAMS = [];
+async function init2d(){
+  CAMS = await (await fetch('cameras.json')).json();
   const root = document.getElementById('cams');
-  for(const cam of cams){
+  for(const cam of CAMS){
     const box=document.createElement('div'); box.className='cam';
     box.innerHTML=`<h2>${cam.label}  <span style="color:#888">${cam.width}×${cam.height}</span></h2>`;
     const cv=document.createElement('canvas'); cv.width=cam.width; cv.height=cam.height;
@@ -706,8 +729,113 @@ async function init(){
     setInterval(tick, 1000/HZ);
   }
 }
-init();
-</script></body></html>"""
+init2d();
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+const HZ = __HZ__;
+const STRIDE = 2;                 // sub-sample pixels to keep the cloud light
+function hsv(h){
+  const c=1, x=1-Math.abs((h/60)%2-1);
+  let r,g,b;
+  if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}else if(h<180){r=0;g=c;b=x}
+  else if(h<240){r=0;g=x;b=c}else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}
+  return [r*255,g*255,b*255];
+}
+
+const sel=document.getElementById('pcl-cam');
+const lo=document.getElementById('pcl-lo'), hi=document.getElementById('pcl-hi');
+const rangeLab=document.getElementById('pcl-range'), info=document.getElementById('pcl-info');
+const sizeIn=document.getElementById('pcl-size'), canvas=document.getElementById('pcl-canvas');
+
+const renderer=new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0a0a0a);
+const view=new THREE.PerspectiveCamera(50,1,0.01,200); view.position.set(0,0,2);
+const controls=new OrbitControls(view, renderer.domElement); controls.enableDamping=true;
+const geom=new THREE.BufferGeometry();
+const mat=new THREE.PointsMaterial({size:2, sizeAttenuation:false, vertexColors:true});
+scene.add(new THREE.Points(geom, mat));
+
+function resize(){ const w=canvas.clientWidth, h=canvas.clientHeight;
+  renderer.setSize(w,h,false); view.aspect=w/h; view.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+
+let cam=null, needFrame=false, lastOptical=null, lastRGB=null, lastN=0;
+sizeIn.oninput=()=>mat.size=+sizeIn.value;
+const syncRange=()=>rangeLab.textContent=`${(+lo.value).toFixed(2)}–${(+hi.value).toFixed(2)} m`;
+lo.oninput=hi.oninput=syncRange;
+
+function build(d){
+  const W=cam.width, H=cam.height, fx=cam.fx, fy=cam.fy, cx=cam.cx, cy=cam.cy;
+  const nearM=+lo.value, farM=Math.max(+hi.value, nearM+0.01), span=farM-nearM;
+  const maxN=Math.ceil(W/STRIDE)*Math.ceil(H/STRIDE);
+  const pos=new Float32Array(maxN*3), col=new Float32Array(maxN*3);
+  const opt=new Float32Array(maxN*3), rgb=new Uint8Array(maxN*3);
+  let n=0;
+  for(let v=0; v<H; v+=STRIDE){
+    for(let u=0; u<W; u+=STRIDE){
+      const mm=d[v*W+u]; if(!mm) continue;
+      const R=mm/1000;                              // Euclidean distance (m)
+      const dx=(u-cx)/fx, dy=(v-cy)/fy;
+      const Z=R/Math.sqrt(1+dx*dx+dy*dy);           // -> perpendicular depth
+      const X=dx*Z, Y=dy*Z;                          // optical frame (x right, y down, z fwd)
+      opt[n*3]=X; opt[n*3+1]=Y; opt[n*3+2]=Z;
+      pos[n*3]=X; pos[n*3+1]=-Y; pos[n*3+2]=-Z;      // display: y up, look down -z
+      let t=(R-nearM)/span; t=t<0?0:t>1?1:t;
+      const c=hsv((1-t)*240);
+      col[n*3]=c[0]/255; col[n*3+1]=c[1]/255; col[n*3+2]=c[2]/255;
+      rgb[n*3]=c[0]; rgb[n*3+1]=c[1]; rgb[n*3+2]=c[2];
+      n++;
+    }
+  }
+  geom.setAttribute('position', new THREE.BufferAttribute(pos.subarray(0,n*3),3));
+  geom.setAttribute('color',    new THREE.BufferAttribute(col.subarray(0,n*3),3));
+  lastOptical=opt; lastRGB=rgb; lastN=n;
+  info.textContent = n.toLocaleString()+' points';
+  if(needFrame && n>0){
+    geom.computeBoundingSphere(); const s=geom.boundingSphere;
+    controls.target.copy(s.center);
+    view.position.set(s.center.x, s.center.y, s.center.z + Math.max(s.radius*2.2, 0.5));
+    controls.update(); needFrame=false;
+  }
+}
+
+async function tick(){
+  if(!cam) return;
+  try{ const buf=await (await fetch('depth/'+cam.id+'?t='+Date.now())).arrayBuffer();
+       build(new Uint16Array(buf)); }catch(_){}
+}
+
+document.getElementById('pcl-dl').onclick=()=>{
+  if(!lastN) return;
+  const head='ply\\nformat ascii 1.0\\nelement vertex '+lastN+
+    '\\nproperty float x\\nproperty float y\\nproperty float z'+
+    '\\nproperty uchar red\\nproperty uchar green\\nproperty uchar blue\\nend_header\\n';
+  const rows=new Array(lastN);
+  for(let i=0;i<lastN;i++){
+    rows[i]=lastOptical[i*3].toFixed(4)+' '+lastOptical[i*3+1].toFixed(4)+' '+lastOptical[i*3+2].toFixed(4)+
+            ' '+lastRGB[i*3]+' '+lastRGB[i*3+1]+' '+lastRGB[i*3+2];
+  }
+  const blob=new Blob([head+rows.join('\\n')+'\\n'], {type:'application/octet-stream'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=cam.id+'.ply'; a.click(); URL.revokeObjectURL(a.href);
+};
+
+(async function initPcl(){
+  const cams = await (await fetch('cameras.json')).json();
+  cams.forEach((c,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=c.label; sel.append(o); });
+  function choose(){ cam=cams[+sel.value]; lo.value=cam.near; hi.value=cam.far; syncRange(); needFrame=true; }
+  sel.onchange=choose; choose();
+  resize();
+  setInterval(tick, 1000/HZ);
+  (function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene,view); })();
+})();
+</script>
+</body></html>"""
 
 
 class _WebViewer:
@@ -742,12 +870,17 @@ class _WebViewer:
                     continue
                 self._cams.append(dict(
                     id=f"{unit['unit_id']}_{key}", label=f"{unit['unit_id']}  {key}",
-                    width=vw, height=vh, near=p["near_m"], far=p["far_m"], annot=annot))
+                    width=vw, height=vh, near=p["near_m"], far=p["far_m"],
+                    # intrinsics scaled to the (capped) preview resolution, so the
+                    # browser can back-project depth into a metric point cloud
+                    fx=p["fx"] * scale, fy=p["fy"] * scale,
+                    cx=p["cx"] * scale, cy=p["cy"] * scale, annot=annot))
 
         if not self._cams:
             raise RuntimeError("no camera annotators could be created")
 
-        meta = [{k: c[k] for k in ("id", "label", "width", "height", "near", "far")}
+        meta = [{k: c[k] for k in ("id", "label", "width", "height",
+                                   "near", "far", "fx", "fy", "cx", "cy")}
                 for c in self._cams]
         html = _WEB_VIEWER_HTML.replace("__HZ__", str(int(WEB_VIEWER_HZ)))
         viewer = self

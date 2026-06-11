@@ -143,6 +143,12 @@ pixel to read its metric distance, and drag the range sliders to adjust the colo
 raw metric depth is sent to the browser, so the colouring and the readout are computed
 client-side and update in real time.
 
+Below the depth tiles, a **point cloud** section lets you pick any camera from a dropdown and view
+its depth as an interactive 3D point cloud, coloured by distance. Drag to rotate, scroll to zoom,
+right-drag to pan, and use **Download .ply** to export the current cloud. The points are
+back-projected from depth in the browser using each camera's intrinsics. (The 3D view loads
+three.js from a CDN, so the browser needs internet access; the 2D depth tiles work offline.)
+
 This runs alongside ROS 2 (it does not replace it). Relevant settings at the top of the script:
 `WEB_VIEWER`, `WEB_VIEWER_PORT`, `WEB_VIEWER_HZ`, and `WEB_VIEWER_MAX_W` (preview width cap).
 
