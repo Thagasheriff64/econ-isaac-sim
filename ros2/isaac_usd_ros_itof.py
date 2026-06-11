@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """ROS 2 publisher for e-con DepthVista Helix ToF cameras in Isaac Sim 5.1.
 
-Both camera types (GMSL and USB) are auto-detected in the stage — there is no
-variant argument.  Every DepthVista unit found becomes its own camera, numbered
-by discovery order and tagged with its real type::
+DepthVista units are auto-detected in the stage — there is no variant argument.
+Every unit found becomes its own camera, numbered by discovery order.  A unit
+built as the suffixed GMSL/USB asset is tagged with its type; the unsuffixed
+Create-menu build carries no suffix::
 
-    cam0_gmsl, cam1_usb, cam2_gmsl, …
+    cam0_gmsl, cam1_usb, …        (suffixed GMSL/USB builds)
+    cam0, cam1, …                 (unsuffixed DEPTH_VISTA_HELIX build)
 
-Each unit publishes (``<ns>`` = ``/tof/cam{i}_{type}``)::
+Each unit publishes (``<ns>`` = ``/tof/cam{i}[_{type}]``)::
 
     <ns>/highres/{depth, camera_info, points}     1280x960  0.2-2.0 m
     <ns>/longrange/{depth, camera_info, points}    640x480  0.5-6.0 m
@@ -80,16 +82,20 @@ STOP_SIM_ON_EXIT = True     # True  -> Ctrl+Alt+R / teardown() also stops the
 # It runs alongside ROS 2 (purely additive) and lets you inspect depth without
 # RViz: open the printed URL, hover any camera to read the metric distance, and
 # adjust the colour-mapping range.  No external dependency beyond NumPy.
-WEB_VIEWER       = False     # True -> start the localhost viewer
+WEB_VIEWER       = True     # True -> start the localhost viewer
 WEB_VIEWER_PORT  = 8211      # served at http://localhost:<port>/
 WEB_VIEWER_HZ    = 10        # frame refresh rate (Hz)
 WEB_VIEWER_MAX_W = 640       # cap preview width (px); keeps the extra render light
 
 # Asset prim names mapped to a short type tag.  A unit is any prim whose name
 # matches one of these (or "<name>_NN" for duplicates) and has a ToF_Camera child.
+# The Create-menu build is added as the unsuffixed "DEPTH_VISTA_HELIX" and gets an
+# empty tag (so it is numbered cam0, cam1, … with no _gmsl/_usb suffix); the
+# suffixed names are matched first so an explicit GMSL/USB build is still tagged.
 _ASSET_TYPES = {
     "DEPTH_VISTA_HELIX_GMSL": "gmsl",
     "DEPTH_VISTA_HELIX_USB":  "usb",
+    "DEPTH_VISTA_HELIX":      "",
 }
 
 
@@ -154,18 +160,22 @@ def _stage_mpu(stage) -> float:
 
 
 def _find_asset_roots(stage) -> list:
-    """Find every DepthVista unit (GMSL or USB), including duplicates loaded as
-    ``<name>_01`` / ``_02``.  Returns ``(path, type)`` pairs sorted by path so the
-    discovery order — and therefore cam0, cam1, … — is deterministic.
+    """Find every DepthVista unit (GMSL, USB, or unsuffixed), including duplicates
+    loaded as ``<name>_01`` / ``_02``.  Returns ``(path, type)`` pairs sorted by
+    path so the discovery order — and therefore cam0, cam1, … — is deterministic.
+
+    Names are matched most-specific first, so ``DEPTH_VISTA_HELIX_GMSL`` is tagged
+    ``gmsl`` rather than being swallowed by the unsuffixed ``DEPTH_VISTA_HELIX``.
     """
+    names_by_specificity = sorted(_ASSET_TYPES, key=len, reverse=True)
     found = []
     for prim in stage.Traverse():
         if not prim.GetChild("ToF_Camera").IsValid():
             continue
         name = prim.GetName()
-        for asset_name, type_tag in _ASSET_TYPES.items():
+        for asset_name in names_by_specificity:
             if name == asset_name or name.startswith(asset_name + "_"):
-                found.append((str(prim.GetPath()), type_tag))
+                found.append((str(prim.GetPath()), _ASSET_TYPES[asset_name]))
                 break
     return sorted(found)
 
@@ -1003,7 +1013,7 @@ async def main():
 
     units = []
     for index, (root, type_tag) in enumerate(roots):
-        unit_id   = f"cam{index}_{type_tag}"     # always suffixed, e.g. cam0_gmsl
+        unit_id   = f"cam{index}_{type_tag}" if type_tag else f"cam{index}"
         ns_prefix = f"{TOPIC_ROOT}/{unit_id}"
         graph_tag = unit_id.upper()
 

@@ -60,17 +60,19 @@ hierarchy intact.
 ## ROS 2 streaming (optional)
 
 [`ros2/isaac_usd_ros_itof.py`](ros2/isaac_usd_ros_itof.py) turns every DepthVista unit in the
-stage into a live ROS 2 publisher. It automatically detects all camera units (GMSL and USB),
-requires no arguments, and numbers them by discovery order, tagging each with its connector type
-(`cam0_gmsl`, `cam1_usb`, and so on). You can add as many cameras as you need; the script
-generates a matching set of topics and graphs for every unit it finds in the stage.
+stage into a live ROS 2 publisher. It automatically detects all camera units, requires no
+arguments, and numbers them by discovery order. The camera added from the Create menu is
+numbered without a suffix (`cam0`, `cam1`, …); a unit loaded from the explicit GMSL or USB build
+is tagged with its connector type (`cam0_gmsl`, `cam1_usb`, …). You can add as many cameras as you
+need; the script generates a matching set of topics and graphs for every unit it finds.
 
 > **No external ROS installation is required to publish.** The script uses the **ROS 2 Humble**
 > libraries bundled with Isaac Sim (the `isaacsim.ros2.bridge` extension), so a system ROS
 > installation or a sourced workspace is not needed on the simulation side. ROS 2 Humble is only
 > required on the consumer side — for example, to run RViz or `ros2 topic echo`.
 
-Each unit publishes under the namespace `<ns> = /tof/cam{i}_{type}`:
+Each unit publishes under the namespace `<ns> = /tof/cam{i}` (with a `_{type}` suffix for explicit
+GMSL/USB builds):
 
 | Topic | Stream | Resolution | Range |
 |-------|--------|-----------|-------|
