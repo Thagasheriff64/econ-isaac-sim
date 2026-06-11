@@ -152,6 +152,8 @@ three.js from a CDN, so the browser needs internet access; the 2D depth tiles wo
 This runs alongside ROS 2 (it does not replace it). Relevant settings at the top of the script:
 `WEB_VIEWER`, `WEB_VIEWER_PORT`, `WEB_VIEWER_HZ`, and `WEB_VIEWER_MAX_W` (preview width cap).
 
+![Browser viewer: per-camera depth tiles and an interactive point cloud](docs/images/10-web-viewer.png)
+
 **Stopping:** press `Ctrl+Alt+R` with the Isaac Sim viewport focused, or call `teardown()`.
 **Re-running:** execute the file again — stale graphs, the hotkey, and the viewer reset
 automatically.
