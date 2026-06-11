@@ -6,6 +6,11 @@ one-time installation, the camera appears in the viewport menu under
 
 ![Create menu showing DepthVista Helix iToF under e-con](docs/images/01-create-menu-depthvista.png)
 
+## Requirements
+
+- NVIDIA **Isaac Sim 5.1**
+- **git** and **python3** (`python` on Windows)
+
 ## Camera variants
 
 Two USD builds of the camera are included in
@@ -25,11 +30,6 @@ When added, the camera is placed under the stage's default prim (`/World`) with 
 hierarchy intact.
 
 ![Stage hierarchy of the added camera](docs/images/02-stage-hierarchy.png)
-
-## Requirements
-
-- NVIDIA **Isaac Sim 5.1**
-- **git** and **python3** (`python` on Windows)
 
 ## Installation
 
