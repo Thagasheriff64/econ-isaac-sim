@@ -1,10 +1,8 @@
 # e-con DepthVista Helix iToF — Isaac Sim
 
-This extension adds the **e-con DepthVista Helix iToF** camera to NVIDIA Isaac Sim. After a
-one-time installation, the camera appears in the viewport menu under
-**Create → Sensors → Camera and Depth Sensors → e-con**, alongside the other camera vendors.
-
-![Create menu showing DepthVista Helix iToF under e-con](docs/images/01-create-menu-depthvista.png)
+This extension integrates the **e-con DepthVista Helix iToF** camera into NVIDIA Isaac Sim. Once
+installed, the camera is available directly from Isaac Sim's **Create** menu, alongside the other
+camera vendors, and can be added to any scene in a few clicks.
 
 ## Requirements
 
@@ -36,6 +34,8 @@ is now built into Isaac Sim and loads on every launch.
 1. If Isaac Sim is already running, close and relaunch it.
 2. Open **Create → Sensors → Camera and Depth Sensors → e-con**.
 3. Select **DepthVista Helix iToF**. The camera is added to your scene under `/World`.
+
+![Create menu showing DepthVista Helix iToF under e-con](docs/images/01-create-menu-depthvista.png)
 
 ## Camera variants
 
