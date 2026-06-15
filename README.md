@@ -6,7 +6,9 @@ camera vendors, and can be added to any scene in a few clicks.
 
 ## Requirements
 
-- NVIDIA **Isaac Sim 5.1**
+- NVIDIA **Isaac Sim ≥ 5.1.0** — see the
+  [Isaac Sim installation guide](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_workstation.html)
+  (tested on 5.1.0 and 6.0.0)
 - **git** and **python3** (`python` on Windows)
 
 ## Installation
