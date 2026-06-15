@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ROS 2 publisher for e-con DepthVista Helix ToF cameras in Isaac Sim 5.1.
+"""ROS 2 publisher for e-con DepthVista Helix iToF cameras in Isaac Sim.
 
 DepthVista units are auto-detected in the stage — there is no variant argument.
 A single unit is simply ``cam``; when more than one is present they are numbered
@@ -989,8 +989,8 @@ class _WebViewer:
 async def main():
     """Discover every DepthVista unit and build all ROS 2 publisher graphs."""
     print("\n" + "═" * 72)
-    print("  isaac_ros_itof.py  —  Isaac Sim 5.1")
-    print("  e-con DepthVista Helix (GMSL + USB auto-detected) | Sensor: onsemi AF0130")
+    print("  isaac_usd_ros_itof.py  —  e-con DepthVista Helix iToF")
+    print("  cameras auto-detected (GMSL / USB / unsuffixed) | Sensor: onsemi AF0130")
     print(f"  IMU 6-axis 416 Hz  |  Domain {ROS2_DOMAIN_ID}  |  TF parent: {TF_WORLD_FRAME}")
     print("═" * 72 + "\n")
 

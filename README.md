@@ -109,32 +109,32 @@ and one TF frame per unit. Every unit frame is a child of `world`.
 
 5. Run the script by clicking **Run** or pressing **Ctrl+Enter**.
 
-The script builds OmniGraph action graphs in the stage to drive the ROS 2 topics. The following
-graphs are generated:
+The script builds OmniGraph action graphs in the stage, all nested under a single `Graphs` scope.
+`<UNIT>` below is the upper-cased camera name (`CAM`, `CAM0`, `CAM0_GMSL`, …). The following graphs
+are generated:
 
 - **`ROS2SharedGraph`** — publishes the shared `/clock` and `/tf` (Publish Clock and Publish
   Transform Tree), driven by the simulation clock.
 
   ![ROS2SharedGraph with clock and TF nodes](docs/images/06-ros2-shared-graph.png)
 
-- **`ROS2Camera_CAM<i>_<TYPE>_HIGHRES`** — the 1280×960 render product feeding the depth,
-  camera_info, and point-cloud publishers for that unit.
+- **`ROS2Camera_<UNIT>_HIGHRES`** — the 1280×960 render product feeding the depth, camera_info,
+  and point-cloud publishers for that unit.
 
   ![High-resolution camera graph](docs/images/07-ros2-camera-highres-graph.png)
 
-- **`ROS2Camera_CAM<i>_<TYPE>_LONGRANGE`** — the 640×480 render product, with the same set of
-  publishers.
+- **`ROS2Camera_<UNIT>_LONGRANGE`** — the 640×480 render product, with the same set of publishers.
 
   ![Long-range camera graph](docs/images/08-ros2-camera-longrange-graph.png)
 
-- **`ROS2ImuGraph_CAM<i>_<TYPE>`** — reads the IMU and publishes it (Publish IMU), with an
-  optional on-screen readout of angular velocity and linear acceleration.
+- **`ROS2ImuGraph_<UNIT>`** — reads the IMU and publishes it (Publish IMU), with an optional
+  on-screen readout of angular velocity and linear acceleration.
 
   ![IMU graph](docs/images/09-ros2-imu-graph.png)
 
-One graph set is generated per camera and per variant found in the stage, so adding more units
-produces correspondingly numbered topics. Set `ROS2_DOMAIN_ID` near the top of the script to
-match the `ROS_DOMAIN_ID` in your shell.
+One graph set is generated per camera, so adding more units produces correspondingly named topics
+and graphs. Set `ROS2_DOMAIN_ID` near the top of the script to match the `ROS_DOMAIN_ID` in your
+shell.
 
 ### Viewing in RViz
 
