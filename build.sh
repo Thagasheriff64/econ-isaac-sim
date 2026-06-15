@@ -94,13 +94,18 @@ done
 info "Using Isaac Sim at: ${ISAACSIM_PATH}"
 
 # ── 4. Register so it auto-loads on every normal launch ──────────────────────
-#   (a) symlink the extension into <isaac>/extsUser  (already on the search path), and
+#   (a) COPY the self-contained extension (Python + USD assets) into <isaac>/extsUser
+#       (already on the search path).  A copy — not a symlink — so the extension keeps
+#       working after this repo is moved or deleted; otherwise a dangling link leaves an
+#       unsatisfiable .kit dependency and Isaac Sim refuses to start.  (build.bat does the
+#       same with robocopy.)
 #   (b) add it to the Full app's .kit [dependencies]  (read fresh each launch, never rewritten;
 #       the persistent user config is unreliable on Isaac Sim 5.1).
 EXTSUSER="${ISAACSIM_PATH}/extsUser"
 mkdir -p "${EXTSUSER}"
-ln -sfn "${EXT_DIR}" "${EXTSUSER}/${EXT_NAME}"
-info "Linked ${EXTSUSER}/${EXT_NAME}"
+rm -rf "${EXTSUSER:?}/${EXT_NAME}"
+cp -r "${EXT_DIR}" "${EXTSUSER}/${EXT_NAME}"
+info "Installed ${EXTSUSER}/${EXT_NAME}"
 
 if command -v python3 >/dev/null 2>&1; then
     python3 "${INSTALL_DIR}/scripts/patch_kit.py" "${ISAACSIM_PATH}/apps" "${EXT_NAME}" \

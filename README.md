@@ -31,6 +31,11 @@ The installer locates Isaac Sim automatically. If it cannot, it prompts you for 
 folder (the one containing `isaac-sim.sh` / `isaac-sim.bat`). That completes the setup: the camera
 is now built into Isaac Sim and loads on every launch.
 
+The installer **copies** the extension — including its USD assets — into Isaac Sim's `extsUser`
+folder, so the installed camera is self-contained: you can move or delete this cloned repo
+afterwards and Isaac Sim keeps working. To remove the camera, run the uninstaller (below) rather
+than deleting files by hand, so the registration in Isaac Sim's `.kit` files is reverted too.
+
 ## Usage
 
 1. If Isaac Sim is already running, close and relaunch it.
