@@ -1,7 +1,7 @@
 [package]
 version = "1.0.0"
 title = "e-con DepthVista Helix iToF Cameras"
-description = "Adds e-con DepthVista Helix iToF (USB / GMSL) to Create > Sensors > Camera and Depth Sensors."
+description = "Adds the e-con DepthVista Helix iToF camera to Create > Sensors > Camera and Depth Sensors."
 category = "Simulation"
 keywords = ["isaac", "sensor", "camera", "depth", "tof", "iToF", "e-con", "DepthVista", "Helix"]
 authors = ["e-con Systems"]

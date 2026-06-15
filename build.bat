@@ -110,9 +110,7 @@ echo.
 echo [SUCCESS] e-con DepthVista Helix installed ^(auto-loads on every launch^).
 echo.
 echo   If Isaac Sim is open, fully close and reopen it. Launch normally - no special command.
-echo   Then: Create -^> Sensors -^> Camera and Depth Sensors -^> e-con
-echo           - DepthVista Helix iToF ^(USB^)
-echo           - DepthVista Helix iToF ^(GMSL^)
+echo   Then: Create -^> Sensors -^> Camera and Depth Sensors -^> e-con -^> DepthVista Helix iToF
 echo.
 echo   Uninstall (reverts everything): uninstall.bat
 exit /b 0

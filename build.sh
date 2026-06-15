@@ -116,9 +116,7 @@ cat <<EOF
 [SUCCESS] e-con DepthVista Helix installed (auto-loads on every launch).
 
   If Isaac Sim is open, fully close and reopen it. Launch normally — no special command.
-  Then: Create -> Sensors -> Camera and Depth Sensors -> e-con
-          - DepthVista Helix iToF (USB)
-          - DepthVista Helix iToF (GMSL)
+  Then: Create -> Sensors -> Camera and Depth Sensors -> e-con -> DepthVista Helix iToF
 
   Uninstall (reverts everything): ./uninstall.sh
 EOF
