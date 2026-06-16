@@ -9,9 +9,9 @@ then run this file.  It references the same DepthVista Helix iToF USD that the
 Create menu uses, and places two units:
 
   1. /World/Ur10Table/ur10/ee_link/DEPTH_VISTA_HELIX   (wrist, eye-in-hand)
-         translate (0.07, -0.055, 0.0)   rotateXYZ (90, 0, -90)
+         translate (0.07, -0.055, 0.0)   rotateXYZ (90, 90, 0)
   2. /World/Ur10Table/pallet/DEPTH_VISTA_HELIX          (over the pallet, eye-to-hand)
-         translate (0.0, 0.0, 1.5)       rotateXYZ (0, 90, -90)
+         translate (0.0, 0.0, 1.5)       rotateXYZ (-90, 0, 0)
 
 Translations are in stage units (metres in the example).  As with the menu, a
 units-compensating scale (asset mm -> stage m) is applied so the camera is its
@@ -31,12 +31,12 @@ CAMERAS = [
     {
         "path": "/World/Ur10Table/ur10/ee_link/DEPTH_VISTA_HELIX",
         "translate": (0.07, -0.055, 0.0),
-        "rotate":    (90.0, 0.0, -90.0),
+        "rotate":    (90.0, 90.0, 0.0),
     },
     {
         "path": "/World/Ur10Table/pallet/DEPTH_VISTA_HELIX",
         "translate": (0.0, 0.0, 1.5),
-        "rotate":    (0.0, 90.0, -90.0),
+        "rotate":    (-90.0, 0.0, 0.0),
     },
 ]
 
