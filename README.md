@@ -1,15 +1,15 @@
 # e-con DepthVista Helix iToF — Isaac Sim
 
 This extension integrates the **e-con DepthVista Helix iToF** camera into NVIDIA Isaac Sim. Once
-installed, the camera is available directly from Isaac Sim's **Create** menu, alongside the other
-camera vendors, and can be added to any scene in a few clicks.
+installed, the camera is available directly from Isaac Sim's **Create** menu, and can be added to any scene in a few clicks.
 
 ## Requirements
 
-- NVIDIA **Isaac Sim ≥ 5.1.0** — see the
+- NVIDIA **Isaac Sim ≥ 5.1.0** — Refer the
   [Isaac Sim installation guide](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_workstation.html)
   (tested on 5.1.0 and 6.0.0)
-- **git** and **python3** (`python` on Windows)
+- **git** and **python3** (`python` on Windows) — `git` clones the repo; `python3` runs the
+  installer that registers the extension in Isaac Sim's `.kit` files
 
 ## Installation
 
@@ -46,17 +46,17 @@ than deleting files by hand, so the registration in Isaac Sim's `.kit` files is 
 
 ## Camera variants
 
-Two USD builds of the camera are included in
+Two USD variants of the camera are included in
 [`exts/econ.itof.menu/assets/`](exts/econ.itof.menu/assets):
 
 | File | Connector |
 |------|-----------|
-| `DEPTH_VISTA_HELIX_GMSL.usd` | GMSL |
-| `DEPTH_VISTA_HELIX_USB.usd`  | USB |
+| `DEPTHVISTA_HELIX_GMSL.usd` | GMSL |
+| `DEPTHVISTA_HELIX_USB.usd`  | USB |
 
-Isaac Sim shows a single entry — **DepthVista Helix iToF** (the GMSL build). If you need the USB
-build, reference
-[`DEPTH_VISTA_HELIX_USB.usd`](exts/econ.itof.menu/assets/DEPTH_VISTA_HELIX_USB.usd) into your
+Isaac Sim shows a single entry — **DepthVista Helix iToF** (the GMSL variant). If you need the USB
+variant, reference
+[`DEPTHVISTA_HELIX_USB.usd`](exts/econ.itof.menu/assets/DEPTHVISTA_HELIX_USB.usd) into your
 stage directly.
 
 When added, the camera is placed under the stage's default prim (`/World`) with its full sensor
@@ -69,17 +69,17 @@ hierarchy intact.
 [`ros2/isaac_usd_ros_itof.py`](ros2/isaac_usd_ros_itof.py) turns every DepthVista unit in the
 stage into a live ROS 2 publisher. It automatically detects all camera units and requires no
 arguments. A single camera is simply `cam`; when more than one is present they are numbered by
-discovery order (`cam0`, `cam1`, …). A unit loaded from the explicit GMSL or USB build also
+discovery order (`cam0`, `cam1`, …). A camera loaded from the explicit GMSL or USB variant also
 carries its connector type (`cam_gmsl`, `cam0_usb`, …). You can add as many cameras as you need;
-the script generates a matching set of topics and graphs for every unit it finds.
+the script generates a matching set of topics and graphs for every camera it finds.
 
-> **No external ROS installation is required to publish.** The script uses the **ROS 2 Humble**
-> libraries bundled with Isaac Sim (the `isaacsim.ros2.bridge` extension), so a system ROS
+> **No external ROS 2 installation is required to publish.** The script uses the **ROS 2 Humble**
+> libraries bundled with Isaac Sim (the `isaacsim.ros2.bridge` extension), so a system ROS 2
 > installation or a sourced workspace is not needed on the simulation side. ROS 2 Humble is only
 > required on the consumer side — for example, to run RViz or `ros2 topic echo`.
 
-Each unit publishes under the namespace `<ns> = /tof/cam` (a `{i}` index is appended only when
-more than one unit is present, plus a `_{type}` suffix for explicit GMSL/USB builds):
+Each camera publishes under the namespace `<ns> = /tof/cam` (a `{i}` index is appended only when
+more than one camera is present, plus a `_{type}` suffix for explicit GMSL/USB variants):
 
 | Topic | Stream | Resolution | Range |
 |-------|--------|-----------|-------|
@@ -88,8 +88,8 @@ more than one unit is present, plus a `_{type}` suffix for explicit GMSL/USB bui
 | `<ns>/imu` | 6-axis IMU | — | 416 Hz |
 | `/clock`, `/tf` | Shared clock and transform tree | — | Published once |
 
-The `highres` and `longrange` streams come from the same physical module, so they share one IMU
-and one TF frame per unit. Every unit frame is a child of `world`.
+The `highres` and `longrange` are two config supported by same physical module, so they share one IMU
+and one TF frame per camera. Every camera frame is a child of `world`.
 
 ### Running the script from the Script Editor
 

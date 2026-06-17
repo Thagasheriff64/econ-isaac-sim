@@ -8,9 +8,9 @@ Run this from the Isaac Sim Script Editor.  First load the example scene:
 then run this file.  It references the same DepthVista Helix iToF USD that the
 Create menu uses, and places two units:
 
-  1. /World/Ur10Table/ur10/ee_link/DEPTH_VISTA_HELIX   (wrist, eye-in-hand)
+  1. /World/Ur10Table/ur10/ee_link/DEPTHVISTA_HELIX   (wrist, eye-in-hand)
          translate (0.07, -0.055, 0.0)   rotateXYZ (90, 90, 0)
-  2. /World/Ur10Table/pallet/DEPTH_VISTA_HELIX          (over the pallet, eye-to-hand)
+  2. /World/Ur10Table/pallet/DEPTHVISTA_HELIX          (over the pallet, eye-to-hand)
          translate (0.0, 0.0, 1.5)       rotateXYZ (-90, 0, 0)
 
 Translations are in stage units (metres in the example).  As with the menu, a
@@ -25,16 +25,16 @@ import omni.kit.app
 from pxr import Usd, UsdGeom, Gf
 
 EXT_NAME  = "econ.itof.menu"
-ASSET_USD = "DEPTH_VISTA_HELIX_GMSL.usd"
+ASSET_USD = "DEPTHVISTA_HELIX_GMSL.usd"
 
 CAMERAS = [
     {
-        "path": "/World/Ur10Table/ur10/ee_link/DEPTH_VISTA_HELIX",
+        "path": "/World/Ur10Table/ur10/ee_link/DEPTHVISTA_HELIX",
         "translate": (0.07, -0.055, 0.0),
         "rotate":    (90.0, 90.0, 0.0),
     },
     {
-        "path": "/World/Ur10Table/pallet/DEPTH_VISTA_HELIX",
+        "path": "/World/Ur10Table/pallet/DEPTHVISTA_HELIX",
         "translate": (0.0, 0.0, 1.5),
         "rotate":    (-90.0, 0.0, 0.0),
     },

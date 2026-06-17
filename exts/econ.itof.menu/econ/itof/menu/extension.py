@@ -18,7 +18,7 @@ VENDOR = "e-con"
 # Both USD variants ship in the repo, but the Create menu exposes only one
 # (the GMSL build) to avoid redundancy, shown without a variant suffix.
 CAMERAS = [
-    {"name": "DepthVista Helix iToF", "usd": "DEPTH_VISTA_HELIX_GMSL.usd", "prim": "/DEPTH_VISTA_HELIX"},
+    {"name": "DepthVista Helix iToF", "usd": "DEPTHVISTA_HELIX_GMSL.usd", "prim": "/DEPTHVISTA_HELIX"},
 ]
 
 

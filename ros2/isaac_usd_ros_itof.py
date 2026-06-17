@@ -91,13 +91,13 @@ WEB_VIEWER_MAX_W = 640       # cap preview width (px); keeps the extra render li
 
 # Asset prim names mapped to a short type tag.  A unit is any prim whose name
 # matches one of these (or "<name>_NN" for duplicates) and has a ToF_Camera child.
-# The Create-menu build is added as the unsuffixed "DEPTH_VISTA_HELIX" and gets an
+# The Create-menu build is added as the unsuffixed "DEPTHVISTA_HELIX" and gets an
 # empty tag (so it is numbered cam0, cam1, … with no _gmsl/_usb suffix); the
 # suffixed names are matched first so an explicit GMSL/USB build is still tagged.
 _ASSET_TYPES = {
-    "DEPTH_VISTA_HELIX_GMSL": "gmsl",
-    "DEPTH_VISTA_HELIX_USB":  "usb",
-    "DEPTH_VISTA_HELIX":      "",
+    "DEPTHVISTA_HELIX_GMSL": "gmsl",
+    "DEPTHVISTA_HELIX_USB":  "usb",
+    "DEPTHVISTA_HELIX":      "",
 }
 
 
@@ -166,8 +166,8 @@ def _find_asset_roots(stage) -> list:
     loaded as ``<name>_01`` / ``_02``.  Returns ``(path, type)`` pairs sorted by
     path so the discovery order — and therefore cam0, cam1, … — is deterministic.
 
-    Names are matched most-specific first, so ``DEPTH_VISTA_HELIX_GMSL`` is tagged
-    ``gmsl`` rather than being swallowed by the unsuffixed ``DEPTH_VISTA_HELIX``.
+    Names are matched most-specific first, so ``DEPTHVISTA_HELIX_GMSL`` is tagged
+    ``gmsl`` rather than being swallowed by the unsuffixed ``DEPTHVISTA_HELIX``.
     """
     names_by_specificity = sorted(_ASSET_TYPES, key=len, reverse=True)
     found = []
