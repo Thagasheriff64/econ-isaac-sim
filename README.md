@@ -7,8 +7,7 @@ optional ROS 2 publisher and a browser depth viewer.
 
 - **NVIDIA Isaac Sim ≥ 5.1.0** — see the
   [installation guide](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_workstation.html).
-  Tested on 5.1.0 and 6.0.0.
-- **git** and **python3** (`python` on Windows).
+  Tested on 5.1.0 and 6.0.0, on both Windows and Linux.
 
 ## Installation
 
