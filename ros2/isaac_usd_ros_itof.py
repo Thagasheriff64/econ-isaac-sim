@@ -68,11 +68,12 @@ IMU_READ_GRAVITY = True     # True  -> realistic accel incl. gravity (~9.81 g at
                             #          rest, like the real ISM330DHCX)
                             # False -> motion-only acceleration (0 at rest)
 
-# On-screen IMU readout, selectable per camera (there can be many):
-#   []      -> none      [0, 2] -> those camera indices      "all" -> every camera
+# On-screen IMU readout — 3 settings.  Keep IMU_PRINT_CAMERAS to a single camera;
+# more than one overlay is unreadable on screen.
+#   IMU_PRINT_CAMERAS : []=none   [0, 2]=those camera indices   "all"=every camera
 IMU_PRINT_CAMERAS     = [0]
-IMU_LINEAR_TO_SCREEN  = True   # show linAcc overlay for the selected cameras
-IMU_ANGULAR_TO_SCREEN = False   # show angVel overlay for the selected cameras
+IMU_LINEAR_TO_SCREEN  = True    # overlay linear acceleration for the selected camera(s)
+IMU_ANGULAR_TO_SCREEN = False   # overlay angular velocity for the selected camera(s)
 
 # --- Lifecycle ----------------------------------------------------------------
 STOP_SIM_ON_EXIT = True     # True  -> Ctrl+Alt+R / teardown() also stops the

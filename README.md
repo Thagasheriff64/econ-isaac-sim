@@ -124,7 +124,10 @@ each camera's graphs are grouped in a `/Graphs/<camera>` subfolder (e.g. `/Graph
 
   ![Long-range camera graph](docs/images/09-ros2-camera-longrange-graph.png)
 
-- **`ROS2ImuGraph_<UNIT>`** — IMU publish, with an optional on-screen readout.
+- **`ROS2ImuGraph_<UNIT>`** — reads and publishes the IMU, with an optional on-screen readout of
+  linear acceleration / angular velocity. Three settings control it: `IMU_PRINT_CAMERAS` (which
+  cameras show the readout), `IMU_LINEAR_TO_SCREEN`, and `IMU_ANGULAR_TO_SCREEN`. Keep the readout
+  to a single camera (the default is `cam` / `cam0` only) — more than one is unreadable on screen.
 
   ![IMU graph](docs/images/10-ros2-imu-graph.png)
 
@@ -141,8 +144,9 @@ All cameras share the `world` frame, so their point clouds line up in a single v
 
 ### Browser depth viewer (optional, no RViz)
 
-Set `WEB_VIEWER = True` in [`ros2/isaac_usd_ros_itof.py`](ros2/isaac_usd_ros_itof.py) — the viewer
-is served at `http://localhost:8211/`, alongside ROS 2.
+The browser viewer is enabled by default (`WEB_VIEWER = True` in
+[`ros2/isaac_usd_ros_itof.py`](ros2/isaac_usd_ros_itof.py)) and served at `http://localhost:8211/`,
+alongside ROS 2. Set it to `False` to disable.
 
 > Refer to the script to set the other options as well.
 
