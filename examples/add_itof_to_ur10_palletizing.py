@@ -90,12 +90,17 @@ def _unit_scale(stage, asset_path: str) -> float:
 
 
 def _set_trs(prim, translate, rotate, scale):
-    """Author a clean local T * R * S on prim (overrides any existing transform)."""
+    """Author a clean local T * R * S on prim (overrides any existing transform).
+
+    Ops use double precision so they match referenced assets (e.g. the Stand)
+    whose existing xformOps are ``double3`` — mixing float/double raises an error.
+    """
+    d = UsdGeom.XformOp.PrecisionDouble
     xform = UsdGeom.Xformable(prim)
     xform.ClearXformOpOrder()
-    xform.AddTranslateOp().Set(Gf.Vec3d(*translate))
-    xform.AddRotateXYZOp().Set(Gf.Vec3f(*rotate))
-    xform.AddScaleOp().Set(Gf.Vec3f(*scale))
+    xform.AddTranslateOp(precision=d).Set(Gf.Vec3d(*translate))
+    xform.AddRotateXYZOp(precision=d).Set(Gf.Vec3d(*rotate))
+    xform.AddScaleOp(precision=d).Set(Gf.Vec3d(*scale))
 
 
 def _example_loaded(stage) -> bool:
