@@ -272,6 +272,12 @@ async def _wait(frames: int):
 GRAPH_ROOT = "/Graphs"
 
 
+def _ensure_scope(stage, path: str):
+    """Create a USD Scope at ``path`` (used to group graphs) if it does not exist."""
+    if not stage.GetPrimAtPath(path).IsValid():
+        stage.DefinePrim(path, "Scope")
+
+
 def _ensure_graph_root(stage):
     """Create the parent ``Graphs`` prim that all ROS 2 graphs live under.
 
@@ -1030,6 +1036,9 @@ async def main():
         unit_id   = f"{base}_{type_tag}" if type_tag else base
         ns_prefix = f"{TOPIC_ROOT}/{unit_id}"
         graph_tag = unit_id.upper()
+        # With multiple cameras, group each one's graphs under /Graphs/<unit_id>;
+        # a single camera keeps its graphs flat under /Graphs.
+        graph_root = f"{GRAPH_ROOT}/{unit_id}" if multi else GRAPH_ROOT
 
         cams = {}
         for key, cfg in _CAMERA_CONFIGS.items():
@@ -1042,7 +1051,7 @@ async def main():
                 params     = cfg["params"],
                 frame_id   = unit_id,             # one flat frame per unit
                 topic_ns   = f"{ns_prefix}/{key}",
-                graph_path = f"{GRAPH_ROOT}/ROS2Camera_{graph_tag}_{key.upper()}",
+                graph_path = f"{graph_root}/ROS2Camera_{graph_tag}_{key.upper()}",
             )
 
         # One TF frame per unit, anchored on the highres camera (optical centre);
@@ -1060,7 +1069,8 @@ async def main():
             imu_prim   = imu_prim,
             imu_topic  = f"{ns_prefix}/imu",
             imu_frame  = unit_id,                 # imu shares the unit frame
-            imu_graph  = f"{GRAPH_ROOT}/ROS2ImuGraph_{graph_tag}",
+            graph_root = graph_root,
+            imu_graph  = f"{graph_root}/ROS2ImuGraph_{graph_tag}",
             imu_print  = _imu_print_enabled(index),
         ))
         print(f"  unit[{index}] {unit_id}   {root}   IMU: {imu_prim or 'NOT FOUND'}")
@@ -1080,6 +1090,8 @@ async def main():
     # ── STEP 6 — Shared graph (/clock + /tf) ─────────────────────────────────
     print("\n[STEP 6] Shared graph …")
     _ensure_graph_root(stage)
+    for unit in units:                       # per-camera subfolders (multi-camera only)
+        _ensure_scope(stage, unit["graph_root"])
     tf_targets = [unit["frame_prim"] for unit in units]
     parent = TF_PARENT_PRIM if (TF_PARENT_PRIM and
                                 stage.GetPrimAtPath(TF_PARENT_PRIM).IsValid()) else ""

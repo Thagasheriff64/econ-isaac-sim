@@ -96,8 +96,9 @@ TF frame per camera (a child of `world`).
 
 5. **Run** (or press **Ctrl+Enter**).
 
-The OmniGraph action graphs are created under a single `Graphs` scope (`<UNIT>` = upper-cased
-camera name, e.g. `CAM`, `CAM0_GMSL`):
+The OmniGraph action graphs are created under a single `Graphs` scope. With more than one camera,
+each camera's graphs are grouped in a `/Graphs/<camera>` subfolder (e.g. `/Graphs/cam0`). Below,
+`<UNIT>` is the upper-cased camera name (e.g. `CAM`, `CAM0_GMSL`):
 
 - **`ROS2SharedGraph`** — shared `/clock` and `/tf`.
 
