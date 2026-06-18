@@ -223,12 +223,10 @@ def _is_skipped(prim) -> bool:
 
 
 def _set_frame_name(stage, prim_path: str, name: str):
-    """Author ``isaac:nameOverride`` so the TF frame published for this prim is
-    exactly ``name`` — matching the frame_id we put on its topics.
-
-    Without it the TF publisher names the frame after the prim (auto-renaming
-    duplicates), so a point cloud's frame_id wouldn't match TF and RViz couldn't
-    transform it into the world frame.
+    """Author ``isaac:nameOverride`` so this prim's published TF frame is exactly
+    ``name`` (matching the frame_id on its topics).  Otherwise the TF publisher
+    names the frame after the prim and renames duplicates, so a point cloud's
+    frame_id would not match TF and RViz could not transform it.
     """
     prim = stage.GetPrimAtPath(prim_path)
     if prim and prim.IsValid():
@@ -386,15 +384,13 @@ def _setup_camera_graph(graph_path: str, cam_path: str, frame_id: str,
 
 
 # ── IMU graph + optional on-screen readout ─────────────────────────────────────
-#
-# One IMU graph per unit (highres/longrange share the module).  ROS2PublishImu
-# has no execOut, so nothing chains after it.  The ToString -> PrintText readout
-# is added in a separate, best-effort step so a missing node type can never break
-# publishing.  ToString lives in omni.graph.nodes; PrintText in omni.graph.ui_nodes.
+# One IMU graph per unit (highres/longrange share the module).  The ToString ->
+# PrintText readout is attached as a separate, best-effort step so a missing node
+# type can never break publishing.  Node types / port names vary by Kit version,
+# hence the candidate lists below.
 
 _TOSTRING_TYPE   = "omni.graph.nodes.ToString"
 _PRINTTEXT_TYPES = ("omni.graph.ui_nodes.PrintText", "omni.graph.nodes.PrintText")
-# Candidate names for ToString's string output (varies by Kit version).
 _TOSTRING_OUTS   = ("outputs:converted", "outputs:string", "outputs:value", "outputs:output")
 
 
@@ -440,11 +436,10 @@ def _setup_imu(graph_path: str, imu_prim_path: str, topic: str,
 def _add_imu_readout(graph_path: str, show_on_screen: bool):
     """Attach a ToString -> PrintText viewport readout for angVel and linAcc.
 
-    The branch is always built (so every IMU graph is identical); only each
-    PrintText's ``toScreen`` differs, set from ``show_on_screen`` AND the
-    per-axis flag.  Best-effort: each step is guarded so a missing node type or
-    port name cannot affect the already-built publish graph.  Connections use
-    absolute paths so the existing ReadIMU node resolves.
+    Always built, so every IMU graph is identical; only each PrintText's
+    ``toScreen`` differs (``show_on_screen`` AND the per-axis flag).  Every step
+    is guarded, so a missing node type or port name cannot break the publish
+    graph built above.
     """
     stage = omni.usd.get_context().get_stage()
 
@@ -596,10 +591,9 @@ def _reset_state():
 # ══════════════════════════════════════════════════════════════════════════════
 #
 # Polls the app-window keyboard each frame, so it fires ONLY while an Isaac Sim
-# window has OS focus.  Ctrl+Alt+R is chosen because it is not bound by default in
-# GNOME, VS Code or common terminals and is not a quit/close action.  Polling does
-# not consume the key, so the combo must be one nothing else grabs.  To rebind,
-# edit the KeyboardInput checks in _poll().
+# window has OS focus.  Ctrl+Alt+R is unbound by default in GNOME / VS Code / most
+# terminals and is not a quit action.  To rebind, edit the KeyboardInput checks in
+# _poll().
 
 class _HotkeyWatcher:
     """Edge-detected Ctrl+Alt+R that calls ``teardown()`` exactly once."""
