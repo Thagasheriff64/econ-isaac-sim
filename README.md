@@ -30,6 +30,20 @@ build.bat
   cloned repository can be deleted afterwards — and auto-loads on every launch.
 - Remove it with the [uninstaller](#uninstallation), not by deleting files manually.
 
+If you have multiple Isaac Sim versions installed, or already know the path, set `ISAACSIM_PATH`
+to skip auto-detection and target a specific install (the same applies to the uninstaller):
+
+```bash
+# Linux
+ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./build.sh
+ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./uninstall.sh
+```
+```bat
+:: Windows
+set ISAACSIM_PATH=C:\path\to\isaacsim & build.bat
+set ISAACSIM_PATH=C:\path\to\isaacsim & uninstall.bat
+```
+
 ## Usage
 
 1. Relaunch Isaac Sim if it is already running.
