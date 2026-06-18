@@ -139,8 +139,6 @@ All cameras share the `world` frame, so their point clouds line up in a single v
 
 ![Point clouds from all cameras fused in the world frame in RViz](docs/images/11-rviz-viewer.png)
 
-![RViz — another view of the fused multi-camera point clouds](docs/images/12-rviz-viewer.png)
-
 ### Browser depth viewer (optional, no RViz)
 
 Set `WEB_VIEWER = True` in [`ros2/isaac_usd_ros_itof.py`](ros2/isaac_usd_ros_itof.py) — the viewer
