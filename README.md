@@ -125,9 +125,11 @@ each camera's graphs are grouped in a `/Graphs/<camera>` subfolder (e.g. `/Graph
   ![Long-range camera graph](docs/images/09-ros2-camera-longrange-graph.png)
 
 - **`ROS2ImuGraph_<UNIT>`** — reads and publishes the IMU, with an optional on-screen readout of
-  linear acceleration / angular velocity. Three settings control it: `IMU_PRINT_CAMERAS` (which
-  cameras show the readout), `IMU_LINEAR_TO_SCREEN`, and `IMU_ANGULAR_TO_SCREEN`. Keep the readout
-  to a single camera (the default is `cam` / `cam0` only) — more than one is unreadable on screen.
+  linear acceleration / angular velocity. Three settings control it:
+  - `IMU_PRINT_CAMERAS` — which cameras show the readout.
+  - `IMU_LINEAR_TO_SCREEN` — overlay linear acceleration.
+  - `IMU_ANGULAR_TO_SCREEN` — overlay angular velocity.
+  - Keep it to a single camera (default: `cam` / `cam0`) — more than one is unreadable on screen.
 
   ![IMU graph](docs/images/10-ros2-imu-graph.png)
 
