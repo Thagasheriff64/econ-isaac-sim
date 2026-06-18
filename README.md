@@ -1,8 +1,7 @@
 # e-con DepthVista Helix iToF — Isaac Sim
 
 Adds the **e-con DepthVista Helix iToF** camera to Isaac Sim's supported camera and depth sensors,
-with the digital-twin assets available in the Content Browser, plus an optional ROS 2 publisher
-and a browser depth viewer.
+with an optional ROS 2 publisher and a browser depth viewer.
 
 ## Requirements
 
@@ -29,7 +28,7 @@ build.bat
 - Auto-detects Isaac Sim (prompts for the folder if not found).
 - Copies the extension and assets into `extsUser` inside the Isaac Sim folder — it is self-contained, so the
   cloned repository can be deleted afterwards — and auto-loads on every launch.
-- Remove it with the [uninstaller](#uninstallation), not by deleting files.
+- Remove it with the [uninstaller](#uninstallation), not by deleting files manually.
 
 ## Usage
 
@@ -97,8 +96,8 @@ TF frame per camera (a child of `world`).
 
 5. **Run** (or press **Ctrl+Enter**).
 
-Graphs are created under a single `Graphs` scope (`<UNIT>` = upper-cased camera name, e.g. `CAM`,
-`CAM0_GMSL`):
+The OmniGraph action graphs are created under a single `Graphs` scope (`<UNIT>` = upper-cased
+camera name, e.g. `CAM`, `CAM0_GMSL`):
 
 - **`ROS2SharedGraph`** — shared `/clock` and `/tf`.
 
