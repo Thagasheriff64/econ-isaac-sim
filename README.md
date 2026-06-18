@@ -1,11 +1,12 @@
 # e-con DepthVista Helix iToF — Isaac Sim
 
-Adds the **e-con DepthVista Helix iToF** camera to NVIDIA Isaac Sim's **Create** menu, with an
-optional ROS 2 publisher and a browser depth viewer.
+Adds the **e-con DepthVista Helix iToF** camera to Isaac Sim's supported camera and depth sensors,
+with the digital-twin assets available in the Content Browser, plus an optional ROS 2 publisher
+and a browser depth viewer.
 
 ## Requirements
 
-- **NVIDIA Isaac Sim ≥ 5.1.0** — see the
+- **NVIDIA Isaac Sim ≥ 5.1.0** — refer to the
   [installation guide](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_workstation.html).
   Tested on 5.1.0 and 6.0.0, on both Windows and Linux.
 
@@ -47,7 +48,8 @@ build.bat
 
 - The menu exposes a single entry — **DepthVista Helix iToF** (the GMSL variant).
 - For the USB variant, reference
-  [`DEPTHVISTA_HELIX_USB.usd`](exts/econ.itof.menu/assets/DEPTHVISTA_HELIX_USB.usd) directly.
+  [`DEPTHVISTA_HELIX_USB.usd`](exts/econ.itof.menu/assets/DEPTHVISTA_HELIX_USB.usd) into your stage
+  directly.
 
 ![Stage hierarchy of the added camera](docs/images/02-stage-hierarchy.png)
 
@@ -59,7 +61,7 @@ the stage.
 - **Detection** — all cameras found automatically; no arguments.
 - **Naming** — `cam`; `cam0`, `cam1`, … when more than one; `_gmsl` / `_usb` suffix for explicit
   variants.
-- **Scales** — one topic and graph set per camera.
+- **Scales** — generates the topics and OmniGraph sets for each camera automatically.
 
 > Uses the **ROS 2 Humble** libraries bundled with Isaac Sim (`isaacsim.ros2.bridge`) — no system
 > ROS 2 is needed to publish. ROS 2 Humble is required only on the consumer side (RViz,
@@ -123,7 +125,10 @@ Set `ROS2_DOMAIN_ID` (top of the script) to match your shell's `ROS_DOMAIN_ID`.
 
 ### Browser depth viewer (optional, no RViz)
 
-Set `WEB_VIEWER = True` (top of the script) — served at `http://localhost:8211/`, alongside ROS 2.
+Set `WEB_VIEWER = True` in [`ros2/isaac_usd_ros_itof.py`](ros2/isaac_usd_ros_itof.py) — the viewer
+is served at `http://localhost:8211/`, alongside ROS 2.
+
+> Refer to the script to set the other options as well.
 
 - **Depth tiles** — live depth, colour-mapped by distance; a probe (cursor → last click → centre)
   reads the metric distance.
