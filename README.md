@@ -31,18 +31,13 @@ build.bat
 - Remove it with the [uninstaller](#uninstallation), not by deleting files manually.
 
 If you have multiple Isaac Sim versions installed, or already know the path, set `ISAACSIM_PATH`
-to skip auto-detection and target a specific install. Run **either** the build **or** the
-uninstall command as needed — not both:
+to skip auto-detection and target a specific install:
 
 ```bash
-# Linux
-ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./build.sh        # install
-ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./uninstall.sh    # remove
+ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./build.sh        # Linux
 ```
 ```bat
-:: Windows
-set ISAACSIM_PATH=C:\path\to\isaacsim & build.bat        :: install
-set ISAACSIM_PATH=C:\path\to\isaacsim & uninstall.bat    :: remove
+set ISAACSIM_PATH=C:\path\to\isaacsim & build.bat                       :: Windows
 ```
 
 ## Usage
@@ -173,7 +168,15 @@ The 3D view loads three.js from a CDN (needs internet); the 2D tiles work offlin
 uninstall.bat           # Windows
 ```
 
-Restores the `.kit` files and removes the extension.
+Restores the `.kit` files and removes the extension. To target a specific install (multiple Isaac
+Sim versions, or a known path), set `ISAACSIM_PATH` as with the installer:
+
+```bash
+ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./uninstall.sh    # Linux
+```
+```bat
+set ISAACSIM_PATH=C:\path\to\isaacsim & uninstall.bat                   :: Windows
+```
 
 ## Notes
 
