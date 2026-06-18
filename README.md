@@ -27,8 +27,8 @@ build.bat
 ```
 
 - Auto-detects Isaac Sim (prompts for the folder if not found).
-- Copies the extension into `extsUser` — self-contained, so the clone can be deleted afterwards —
-  and auto-loads on every launch.
+- Copies the extension into `extsUser` inside the Isaac Sim folder — it is self-contained, so the
+  cloned repository can be deleted afterwards — and auto-loads on every launch.
 - Remove it with the [uninstaller](#uninstallation), not by deleting files.
 
 ## Usage
