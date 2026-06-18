@@ -100,21 +100,23 @@ The OmniGraph action graphs are created under a single `Graphs` scope. With more
 each camera's graphs are grouped in a `/Graphs/<camera>` subfolder (e.g. `/Graphs/cam0`). Below,
 `<UNIT>` is the upper-cased camera name (e.g. `CAM`, `CAM0_GMSL`):
 
+![Per-camera graph grouping under the Graphs scope (multiple cameras)](docs/images/06-graphs-grouped.png)
+
 - **`ROS2SharedGraph`** — shared `/clock` and `/tf`.
 
-  ![ROS2SharedGraph with clock and TF nodes](docs/images/06-ros2-shared-graph.png)
+  ![ROS2SharedGraph with clock and TF nodes](docs/images/07-ros2-shared-graph.png)
 
 - **`ROS2Camera_<UNIT>_HIGHRES`** — 1280×960 depth, camera_info, points.
 
-  ![High-resolution camera graph](docs/images/07-ros2-camera-highres-graph.png)
+  ![High-resolution camera graph](docs/images/08-ros2-camera-highres-graph.png)
 
 - **`ROS2Camera_<UNIT>_LONGRANGE`** — 640×480, same publishers.
 
-  ![Long-range camera graph](docs/images/08-ros2-camera-longrange-graph.png)
+  ![Long-range camera graph](docs/images/09-ros2-camera-longrange-graph.png)
 
 - **`ROS2ImuGraph_<UNIT>`** — IMU publish, with an optional on-screen readout.
 
-  ![IMU graph](docs/images/09-ros2-imu-graph.png)
+  ![IMU graph](docs/images/10-ros2-imu-graph.png)
 
 Set `ROS2_DOMAIN_ID` (top of the script) to match your shell's `ROS_DOMAIN_ID`.
 
@@ -122,6 +124,12 @@ Set `ROS2_DOMAIN_ID` (top of the script) to match your shell's `ROS_DOMAIN_ID`.
 
 - Set the **Fixed Frame** to **`world`** (all camera frames are children of it).
 - Rename it via `TF_WORLD_FRAME`; parent all frames under a prim via `TF_PARENT_PRIM`.
+
+All cameras share the `world` frame, so their point clouds line up in a single view:
+
+![Point clouds from all cameras fused in the world frame in RViz](docs/images/11-rviz-viewer.png)
+
+![RViz — another view of the fused multi-camera point clouds](docs/images/12-rviz-viewer.png)
 
 ### Browser depth viewer (optional, no RViz)
 
@@ -138,7 +146,7 @@ is served at `http://localhost:8211/`, alongside ROS 2.
 
 The 3D view loads three.js from a CDN (needs internet); the 2D tiles work offline.
 
-![Browser viewer: per-camera depth tiles and an interactive point cloud](docs/images/10-web-viewer.png)
+![Browser viewer: per-camera depth tiles and an interactive point cloud](docs/images/13-web-viewer.png)
 
 - **Stop** — `Ctrl+Alt+R` (viewport focused) or `teardown()`.
 - **Restart** — run the file again; graphs, hotkey, and viewer reset automatically.
