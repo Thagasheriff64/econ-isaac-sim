@@ -31,17 +31,18 @@ build.bat
 - Remove it with the [uninstaller](#uninstallation), not by deleting files manually.
 
 If you have multiple Isaac Sim versions installed, or already know the path, set `ISAACSIM_PATH`
-to skip auto-detection and target a specific install (the same applies to the uninstaller):
+to skip auto-detection and target a specific install. Run **either** the build **or** the
+uninstall command as needed — not both:
 
 ```bash
 # Linux
-ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./build.sh
-ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./uninstall.sh
+ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./build.sh        # install
+ISAACSIM_PATH=/home/econsy/ROBOTICS/downloads/isaacsim ./uninstall.sh    # remove
 ```
 ```bat
 :: Windows
-set ISAACSIM_PATH=C:\path\to\isaacsim & build.bat
-set ISAACSIM_PATH=C:\path\to\isaacsim & uninstall.bat
+set ISAACSIM_PATH=C:\path\to\isaacsim & build.bat        :: install
+set ISAACSIM_PATH=C:\path\to\isaacsim & uninstall.bat    :: remove
 ```
 
 ## Usage
