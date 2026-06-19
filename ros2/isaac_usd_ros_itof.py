@@ -75,6 +75,13 @@ IMU_PRINT_CAMERAS     = [0]
 IMU_LINEAR_TO_SCREEN  = True    # overlay linear acceleration for the selected camera(s)
 IMU_ANGULAR_TO_SCREEN = False   # overlay angular velocity for the selected camera(s)
 
+# --- Depth clipping -----------------------------------------------------------
+# Render-frustum near clip, in metres — an OPTICS value, NOT the ToF min range.
+# Kept small so geometry closer than the ToF minimum still renders (you see the
+# near object) instead of being culled, which makes the camera "see through" it.
+# Set None to leave the asset's own clipping range untouched.
+RENDER_NEAR_M = 0.01
+
 # --- Lifecycle ----------------------------------------------------------------
 STOP_SIM_ON_EXIT = True     # True  -> Ctrl+Alt+R / teardown() also stops the
                             #          timeline (toolbar returns to play)
@@ -248,11 +255,17 @@ def _bake_intrinsics(stage, cam_path: str, params: dict):
     cam.GetFocalLengthAttr().Set(float(_FL_MM))
     cam.GetHorizontalApertureOffsetAttr().Set(0.0)
     cam.GetVerticalApertureOffsetAttr().Set(0.0)
-    cam.GetClippingRangeAttr().Set(
-        Gf.Vec2f(params["near_m"] / mpu, params["far_m"] / mpu))
+    # Near clip is the render-frustum optics (RENDER_NEAR_M), NOT the ToF min
+    # range — keeping it small avoids culling close geometry (no see-through).
+    # The ToF range stays the camera's near_m/far_m, used for the depth colouring.
+    if RENDER_NEAR_M is not None:
+        near = RENDER_NEAR_M / mpu
+        cam.GetClippingRangeAttr().Set(Gf.Vec2f(near, params["far_m"] / mpu))
+        clip = f"{near:.3f}-{params['far_m']/mpu:.3f}"
+    else:
+        clip = "asset"
     print(f"  [bake] {cam_path.split('/')[-1]:32s} fl={_FL_MM}mm "
-          f"fx={params['fx']:.1f}px  "
-          f"clip={params['near_m']/mpu:.3f}-{params['far_m']/mpu:.3f} wu")
+          f"fx={params['fx']:.1f}px  clip={clip} wu")
 
 
 async def _wait(frames: int):
