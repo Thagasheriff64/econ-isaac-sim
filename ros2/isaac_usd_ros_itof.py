@@ -1063,11 +1063,11 @@ class _WebViewer:
 
 async def main():
     """Discover every DepthVista unit and build all ROS 2 publisher graphs."""
-    print("\n" + "═" * 72)
+    print("\n" + "--" * 72)
     print("  isaac_usd_ros_itof.py  —  e-con DepthVista Helix iToF")
     print("  cameras auto-detected (GMSL / USB / unsuffixed) | Sensor: onsemi AF0130")
     print(f"  IMU 6-axis 416 Hz  |  Domain {ROS2_DOMAIN_ID}  |  TF parent: {TF_WORLD_FRAME}")
-    print("═" * 72 + "\n")
+    print("--" * 72 + "\n")
 
     if not _HAVE_ISAAC:
         print("[main] Must run inside Isaac Sim.")
@@ -1217,7 +1217,7 @@ def _print_summary(units: list):
     overlay_axes = "+".join(a for a, on in (("angVel", IMU_ANGULAR_TO_SCREEN),
                                             ("linAcc", IMU_LINEAR_TO_SCREEN)) if on)
 
-    print("\n" + "═" * 72)
+    print("\n" + "--" * 72)
     print(f"  ROS 2 ACTIVE  —  {len(units)} unit(s), {n_graphs} graphs\n")
     for unit in units:
         print(f"  ── UNIT {unit['unit_id']}   frame={unit['unit_id']} -> "
@@ -1240,7 +1240,7 @@ def _print_summary(units: list):
     if WEB_VIEWER and _web_viewer is not None:
         print(f"  Web viewer: http://localhost:{WEB_VIEWER_PORT}/  (live depth, no RViz needed)")
     print("  Stop: Ctrl+Alt+R (viewport focused) or teardown()")
-    print("═" * 72 + "\n")
+    print("--" * 72 + "\n")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
