@@ -699,7 +699,7 @@ class _HotkeyWatcher:
 # ══════════════════════════════════════════════════════════════════════════════
 #
 # Runs entirely inside the Isaac Sim process and alongside ROS 2.  A Replicator
-# "distance_to_camera" annotator on each camera yields a metric depth array every
+# "distance_to_image_plane" annotator on each camera yields a metric depth array every
 # frame; the latest frame per camera is buffered (as 16-bit millimetres) and a
 # small threaded HTTP server hands it to the browser.  The page colour-maps depth
 # over each camera's near/far range, reports the distance at a probe point (the
@@ -863,11 +863,11 @@ class PclCard{
     for(let v=0; v<H; v+=STRIDE){
       for(let u=0; u<W; u+=STRIDE){
         const mm=d[v*W+u]; if(!mm) continue;
-        const R=mm/1000, dx=(u-cx)/fx, dy=(v-cy)/fy;
-        const Z=R/Math.sqrt(1+dx*dx+dy*dy), X=dx*Z, Y=dy*Z;   // -> perpendicular depth
+        const Z=mm/1000, dx=(u-cx)/fx, dy=(v-cy)/fy;          // planar (perpendicular) depth
+        const X=dx*Z, Y=dy*Z;
         opt[n*3]=X; opt[n*3+1]=Y; opt[n*3+2]=Z;               // optical frame (for .ply)
         pos[n*3]=X; pos[n*3+1]=-Y; pos[n*3+2]=-Z;             // display: y up, look -z
-        let t=(R-near)/span; t=t<0?0:t>1?1:t;
+        let t=(Z-near)/span; t=t<0?0:t>1?1:t;
         const cc=hsv((1-t)*240);
         col[n*3]=cc[0]/255; col[n*3+1]=cc[1]/255; col[n*3+2]=cc[2]/255;
         rgb[n*3]=cc[0]; rgb[n*3+1]=cc[1]; rgb[n*3+2]=cc[2]; n++;
@@ -943,7 +943,7 @@ class _WebViewer:
                 vw, vh = max(1, int(p["width"] * scale)), max(1, int(p["height"] * scale))
                 try:
                     rp = rep.create.render_product(cam["path"], (vw, vh))
-                    annot = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
+                    annot = rep.AnnotatorRegistry.get_annotator("distance_to_image_plane")
                     annot.attach(rp)
                 except Exception as exc:
                     print(f"  [web] annotator failed for {cam['path']}: {exc}")
