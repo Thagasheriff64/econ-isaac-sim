@@ -3,12 +3,12 @@
 
 DepthVista units are auto-detected in the stage — there is no variant argument.
 A single unit is simply ``cam``; when more than one is present they are numbered
-by discovery order (``cam0``, ``cam1``, …).  A unit built as the suffixed GMSL/USB
+by discovery order (``cam0``, ``cam1``, ->).  A unit built as the suffixed GMSL/USB
 asset additionally carries its type tag::
 
     cam                           (one unit, unsuffixed build)
-    cam0, cam1, …                 (multiple units)
-    cam_gmsl  /  cam0_usb, …      (explicit GMSL/USB builds)
+    cam0, cam1, ->                 (multiple units)
+    cam_gmsl  /  cam0_usb, ->      (explicit GMSL/USB builds)
 
 Each unit publishes (``<ns>`` = ``/tof/cam[{i}][_{type}]``)::
 
@@ -103,7 +103,7 @@ WEB_VIEWER_MAX_W = None      # None -> camera's full (original) resolution; set 
 # Asset prim names mapped to a short type tag.  A unit is any prim whose name
 # matches one of these (or "<name>_NN" for duplicates) and has a ToF_Camera child.
 # The Create-menu build is added as the unsuffixed "DEPTHVISTA_HELIX" and gets an
-# empty tag (so it is numbered cam0, cam1, … with no _gmsl/_usb suffix); the
+# empty tag (so it is numbered cam0, cam1, -> with no _gmsl/_usb suffix); the
 # suffixed names are matched first so an explicit GMSL/USB build is still tagged.
 _ASSET_TYPES = {
     "DEPTHVISTA_HELIX_GMSL": "gmsl",
@@ -178,7 +178,7 @@ def _stage_mpu(stage) -> float:
 def _find_asset_roots(stage) -> list:
     """Find every DepthVista unit (GMSL, USB, or unsuffixed), including duplicates
     loaded as ``<name>_01`` / ``_02``.  Returns ``(path, type)`` pairs sorted by
-    path so the discovery order — and therefore cam0, cam1, … — is deterministic.
+    path so the discovery order — and therefore cam0, cam1, -> — is deterministic.
 
     Names are matched most-specific first, so ``DEPTHVISTA_HELIX_GMSL`` is tagged
     ``gmsl`` rather than being swallowed by the unsuffixed ``DEPTHVISTA_HELIX``.
@@ -614,7 +614,7 @@ async def _ensure_playing():
     try:
         timeline = omni.timeline.get_timeline_interface()
         if not timeline.is_playing():
-            print("[timeline] pressing Play …")
+            print("[timeline] pressing Play ->")
             timeline.play()
             await _wait(10)
         else:
@@ -697,7 +697,7 @@ class _HotkeyWatcher:
         pressed = r and ctrl and alt
         if pressed and not self._pressed:
             self._stopping = True   # block re-entry before teardown drops _sub
-            print("\n[hotkey] Ctrl+Alt+R — stopping ROS2 …")
+            print("\n[hotkey] Ctrl+Alt+R — stopping ROS2 ->")
             teardown()
             return
         self._pressed = pressed
@@ -1080,18 +1080,18 @@ async def main():
     await _wait(10)
 
     # ── STEP 1 — Playback ────────────────────────────────────────────────────
-    print("[STEP 1] Playback …")
+    print("[STEP 1] Playback ->")
     await _ensure_playing()
 
     # ── STEP 2 — Stage units ─────────────────────────────────────────────────
-    print("\n[STEP 2] Stage units …")
+    print("\n[STEP 2] Stage units ->")
     mpu = _stage_mpu(stage)
     print(f"  metersPerUnit = {mpu}")
     if abs(mpu - 1.0) > 1e-6:
         print("  WARNING: stage not in metres — depth values will be in stage units")
 
     # ── STEP 3 — Discover units ──────────────────────────────────────────────
-    print("\n[STEP 3] Discovering DepthVista units (GMSL + USB) …")
+    print("\n[STEP 3] Discovering DepthVista units (GMSL + USB) ->")
     roots = _find_asset_roots(stage)
     if not roots:
         print("[FATAL] No DepthVista unit found. Load a USD first.")
@@ -1148,21 +1148,21 @@ async def main():
 
     # ── STEP 4 — Bake intrinsics (optional) ──────────────────────────────────
     if BAKE_INTRINSICS:
-        print("\n[STEP 4] Baking intrinsics …")
+        print("\n[STEP 4] Baking intrinsics ->")
         for unit in units:
             for cam in unit["cams"].values():
                 _bake_intrinsics(stage, cam["path"], cam["params"])
         await _wait(5)
     else:
-        print("\n[STEP 4] Baking intrinsics … SKIPPED (streaming camera as authored)")
+        print("\n[STEP 4] Baking intrinsics -> SKIPPED (streaming camera as authored)")
 
     # ── STEP 5 — Verify IMU sensors ──────────────────────────────────────────
-    print("\n[STEP 5] Verifying IMU sensors …")
+    print("\n[STEP 5] Verifying IMU sensors ->")
     for unit in units:
         unit["imu_ok"] = bool(unit["imu_prim"]) and _verify_imu_sensor(unit["imu_prim"])
 
     # ── STEP 6 — Shared graph (/clock + /tf) ─────────────────────────────────
-    print("\n[STEP 6] Shared graph …")
+    print("\n[STEP 6] Shared graph ->")
     _ensure_graph_root(stage)
     for unit in units:                       # per-camera subfolders (multi-camera only)
         _ensure_scope(stage, unit["graph_root"])
@@ -1174,7 +1174,7 @@ async def main():
     _setup_shared(tf_targets, parent)
 
     # ── STEP 7 — Per-unit camera graphs ──────────────────────────────────────
-    print("\n[STEP 7] Camera graphs …")
+    print("\n[STEP 7] Camera graphs ->")
     for unit in units:
         for cam in unit["cams"].values():
             params = cam["params"]
@@ -1182,7 +1182,7 @@ async def main():
                                 cam["topic_ns"], params["width"], params["height"])
 
     # ── STEP 8 — Per-unit IMU graphs ─────────────────────────────────────────
-    print("\n[STEP 8] IMU graphs …")
+    print("\n[STEP 8] IMU graphs ->")
     for unit in units:
         if unit["imu_ok"]:
             _setup_imu(unit["imu_graph"], unit["imu_prim"], unit["imu_topic"],
@@ -1191,13 +1191,13 @@ async def main():
             print(f"  [imu] {unit['unit_id']} SKIPPED — no valid IMU sensor prim")
 
     # ── STEP 9 — Warm-up ─────────────────────────────────────────────────────
-    print("\n[STEP 9] Warming up …")
+    print("\n[STEP 9] Warming up ->")
     await _wait(10)
 
     # ── STEP 10 — Web viewer (optional) ──────────────────────────────────────
     global _web_viewer
     if WEB_VIEWER:
-        print("\n[STEP 10] Web viewer …")
+        print("\n[STEP 10] Web viewer ->")
         try:
             _web_viewer = _WebViewer(units)
         except Exception as exc:

@@ -186,7 +186,7 @@ def main():
 
     if added:
         omni.usd.get_context().get_selection().set_selected_prim_paths(added, True)
-    print(f"[econ] done — {len(added)} prim(s) added "
+    print(f"[econ] done - {len(added)} prim(s) added "
           f"({len(CAMERAS)} cameras + {len(PROPS)} stand parts).")
 
 
