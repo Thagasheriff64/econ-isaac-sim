@@ -81,7 +81,7 @@ IMU_ANGULAR_TO_SCREEN = False   # overlay angular velocity for the selected came
 # False -> leave the camera untouched and just stream it as authored in the USD.
 #          The shipped DepthVista asset already has the correct intrinsics, so
 #          False is safe and never overrides your manual camera params.
-BAKE_INTRINSICS = True
+BAKE_INTRINSICS = False
 
 # Render-frustum near clip, in metres — an OPTICS value, NOT the ToF min range.
 # Kept small so geometry closer than the ToF minimum still renders (you see the
@@ -137,7 +137,10 @@ def _make_params(fx: float, width: int, height: int,
                 width=width, height=height, near_m=near_m, far_m=far_m)
 
 
-# Per-resolution config (camera prim names are identical in the GMSL/USB builds).
+# Per-resolution config.  ``prim_name`` is structural (how the two cameras are
+# found).  ``params`` are only a FALLBACK — the node reads the real intrinsics,
+# resolution and depth range from each camera's authored attributes at runtime
+# (see _read_cam_params).  Prim names are identical in the GMSL/USB builds.
 _CAMERA_CONFIGS = {
     "highres": {
         "prim_name": "econ_iToF_highResolution",
@@ -218,6 +221,52 @@ def _find_camera(stage, unit_root: str, prim_name: str) -> "str | None":
 
     print(f"  [find] ERROR: '{prim_name}' not found under {unit_root}.")
     return None
+
+
+def _read_cam_params(stage, cam_path: str, fallback: dict) -> dict:
+    """Read intrinsics / resolution / depth range from the camera's own authored
+    attributes — the USD asset is the source of truth — falling back to
+    ``fallback`` for anything not present.
+
+    The DepthVista asset authors ``info:resolution``, ``info:fx_px`` and
+    ``isaac:depthRange``; this is what lets the node stream the camera as-is
+    (``BAKE_INTRINSICS = False``) instead of hard-coding the sensor constants.
+    """
+    p = dict(fallback)
+    prim = stage.GetPrimAtPath(cam_path)
+    if not (prim and prim.IsValid()):
+        return p
+
+    def _attr(name):
+        a = prim.GetAttribute(name)
+        return a.Get() if (a and a.HasAuthoredValue()) else None
+
+    res = _attr("info:resolution")                 # e.g. "1280x960"
+    if res:
+        try:
+            w, h = (int(x) for x in str(res).lower().split("x"))
+            p["width"], p["height"] = w, h
+        except Exception:
+            pass
+
+    fx = _attr("info:fx_px")
+    if fx is None:                                 # else derive from focal length
+        cam = UsdGeom.Camera(prim)
+        fl, ha = cam.GetFocalLengthAttr().Get(), cam.GetHorizontalApertureAttr().Get()
+        if fl and ha:
+            fx = float(fl) * p["width"] / float(ha)
+    if fx:
+        p["fx"] = p["fy"] = float(fx)
+
+    p["cx"], p["cy"] = p["width"] / 2.0, p["height"] / 2.0   # centred principal point
+
+    dr = _attr("isaac:depthRange")                 # metres (near, far)
+    if dr is not None:
+        p["near_m"], p["far_m"] = float(dr[0]), float(dr[1])
+
+    print(f"  [params] {cam_path.split('/')[-1]:28s} {p['width']}x{p['height']}  "
+          f"fx={p['fx']:.1f}px  range={p['near_m']}-{p['far_m']} m")
+    return p
 
 
 def _find_imu(stage, unit_root: str) -> "str | None":
@@ -1063,7 +1112,9 @@ async def main():
                 return None
             cams[key] = dict(
                 path       = cam_path,
-                params     = cfg["params"],
+                # read intrinsics/resolution/range from the camera; constants are
+                # only the fallback (see _read_cam_params)
+                params     = _read_cam_params(stage, cam_path, cfg["params"]),
                 frame_id   = unit_id,             # one flat frame per unit
                 topic_ns   = f"{ns_prefix}/{key}",
                 graph_path = f"{graph_root}/ROS2Camera_{graph_tag}_{key.upper()}",
