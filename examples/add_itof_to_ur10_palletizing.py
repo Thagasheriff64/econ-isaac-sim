@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Add e-con DepthVista Helix iToF cameras (and a floating-camera stand) to the
-UR10 Palletizing example.
+"""Add e-con DepthVista Helix iToF cameras (and an over-pallet camera stand) to
+the UR10 Palletizing example.
 
 Run this from the Isaac Sim Script Editor.  First load the example scene:
 
@@ -14,10 +14,11 @@ then run this file.  It runs in two steps:
        /World/Ur10Table/pallet/DEPTHVISTA_HELIX          (over the pallet, eye-to-hand)
            translate (0.0, 0.0, 1.5)        rotateXYZ (-90, 0, 0)
 
-  2. Floating-camera stand - a referenced Isaac Stand prop plus a cylinder arm:
-       /World/Ur10Table/dolly/Stand     (referenced stand_instanceable.usd)
+  2. Camera stand over the pallet - one assembly under /World/Ur10Table/dolly/
+     CameraStand, holding a referenced Isaac Stand prop and a cylinder arm:
+       .../dolly/CameraStand/Stand      (referenced stand_instanceable.usd)
            translate (1.2, 0.0, 1.88193) rotateXYZ (0, 0, 0)  scale (1.2, 1.2, 3.66786)
-       /World/Ur10Table/dolly/Cylinder  (Create > Mesh > Cylinder)
+       .../dolly/CameraStand/Cylinder   (Create > Mesh > Cylinder)
            translate (0.6, 0.0, 1.88)    rotateXYZ (0, 90, 0) scale (0.0282, 0.07185, 1.3)
 
 Translations are in stage units (metres in the example).  For the cameras a
@@ -52,19 +53,20 @@ CAMERAS = [
     },
 ]
 
-# Floating-camera stand, added second.  "reference" pulls in a USD asset;
-# "cylinder" creates a mesh cylinder (Create > Mesh > Cylinder).
+# Over-pallet camera stand, added second as ONE assembly: both parts live under
+# the /World/Ur10Table/dolly/CameraStand group, so the stand + arm move/select as
+# a single part.  "reference" pulls in a USD asset; "cylinder" creates a mesh.
 PROPS = [
     {
         "kind": "reference", "usd": STAND_USD,
-        "path": "/World/Ur10Table/dolly/Stand",
+        "path": "/World/Ur10Table/dolly/CameraStand/Stand",
         "translate": (1.2, 0.0, 1.88193),
         "rotate":    (0.0, 0.0, 0.0),
         "scale":     (1.2, 1.2, 3.66786),
     },
     {
         "kind": "cylinder",
-        "path": "/World/Ur10Table/dolly/Cylinder",
+        "path": "/World/Ur10Table/dolly/CameraStand/Cylinder",
         "translate": (0.6, 0.0, 1.88),
         "rotate":    (0.0, 90.0, 0.0),
         "scale":     (0.0282, 0.07185, 1.3),
@@ -181,7 +183,7 @@ def main():
 
     # Step 1 - cameras
     added = [s["path"] for s in CAMERAS if _add_camera(stage, s, asset, scale)]
-    # Step 2 - floating-camera stand
+    # Step 2 - over-pallet camera stand (one assembly under .../dolly/CameraStand)
     added += [s["path"] for s in PROPS if _add_prop(stage, s)]
 
     if added:
