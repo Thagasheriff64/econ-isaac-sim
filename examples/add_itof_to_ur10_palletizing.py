@@ -4,7 +4,7 @@ UR10 Palletizing example.
 
 Run this from the Isaac Sim Script Editor.  First load the example scene:
 
-    Window -> Robotics Examples -> (Manipulation) UR10 Palletizing  ->  Load
+    Window -> Robotics Examples -> CORTEX -> UR10 Palletizing  ->  Load
 
 then run this file.  It runs in two steps:
 
