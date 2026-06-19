@@ -94,9 +94,11 @@ STOP_SIM_ON_EXIT = True     # True  -> Ctrl+Alt+R / teardown() also stops the
 # It runs alongside ROS 2 (purely additive) and lets you inspect depth without
 # RViz: open the printed URL to see each camera's colour-mapped depth (with a
 # distance probe) and interactive point clouds.  No dependency beyond NumPy.
-WEB_VIEWER      = True      # True -> start the localhost viewer
-WEB_VIEWER_PORT = 8211      # served at http://localhost:<port>/
-WEB_VIEWER_HZ   = 10        # frame refresh rate (Hz); renders at the camera's full resolution
+WEB_VIEWER       = True     # True -> start the localhost viewer
+WEB_VIEWER_PORT  = 8211      # served at http://localhost:<port>/
+WEB_VIEWER_HZ    = 10        # frame refresh rate (Hz)
+WEB_VIEWER_MAX_W = None      # None -> camera's full (original) resolution; set e.g.
+                            # 640 to cap the preview width (lighter render, smaller frames)
 
 # Asset prim names mapped to a short type tag.  A unit is any prim whose name
 # matches one of these (or "<name>_NN" for duplicates) and has a ToF_Camera child.
@@ -218,48 +220,59 @@ def _find_camera(stage, unit_root: str, prim_name: str) -> "str | None":
 
 
 def _read_cam_params(stage, cam_path: str, fallback: dict) -> dict:
-    """Read intrinsics / resolution / depth range from the camera's own authored
-    attributes — these are the default.  Anything the camera does not provide
-    falls back to ``fallback`` (the baked AF0130 SENSOR CONSTANTS).
+    """Build a camera's params from its OWN authored attributes (the source of
+    truth).  Whatever the camera does not author is filled from ``fallback`` —
+    the baked AF0130 SENSOR CONSTANTS.
 
+    That fallback is meant for ``BAKE_INTRINSICS = True`` (where the constants are
+    the canonical values); with ``BAKE_INTRINSICS = False`` it still fills any gap
+    so the node can run, but warns, because the asset should provide everything.
     The DepthVista asset authors ``info:resolution``, ``info:fx_px`` and
-    ``isaac:depthRange``, so the node streams the camera as-is
-    (``BAKE_INTRINSICS = False``) instead of hard-coding the sensor constants.
+    ``isaac:depthRange``, so normally nothing is taken from the constants.
     """
-    p = dict(fallback)
+    asset = {}
     prim = stage.GetPrimAtPath(cam_path)
-    if not (prim and prim.IsValid()):
-        return p
+    if prim and prim.IsValid():
+        def _attr(name):
+            a = prim.GetAttribute(name)
+            return a.Get() if (a and a.HasAuthoredValue()) else None
 
-    def _attr(name):
-        a = prim.GetAttribute(name)
-        return a.Get() if (a and a.HasAuthoredValue()) else None
+        res = _attr("info:resolution")             # e.g. "1280x960"
+        if res:
+            try:
+                w, h = (int(x) for x in str(res).lower().split("x"))
+                asset["width"], asset["height"] = w, h
+            except Exception:
+                pass
 
-    res = _attr("info:resolution")                 # e.g. "1280x960"
-    if res:
-        try:
-            w, h = (int(x) for x in str(res).lower().split("x"))
-            p["width"], p["height"] = w, h
-        except Exception:
-            pass
+        fx = _attr("info:fx_px")
+        if fx is None:                             # else derive from focal length
+            cam = UsdGeom.Camera(prim)
+            fl, ha = cam.GetFocalLengthAttr().Get(), cam.GetHorizontalApertureAttr().Get()
+            w = asset.get("width", fallback["width"])
+            if fl and ha:
+                fx = float(fl) * w / float(ha)
+        if fx:
+            asset["fx"] = asset["fy"] = float(fx)
 
-    fx = _attr("info:fx_px")
-    if fx is None:                                 # else derive from focal length
-        cam = UsdGeom.Camera(prim)
-        fl, ha = cam.GetFocalLengthAttr().Get(), cam.GetHorizontalApertureAttr().Get()
-        if fl and ha:
-            fx = float(fl) * p["width"] / float(ha)
-    if fx:
-        p["fx"] = p["fy"] = float(fx)
+        dr = _attr("isaac:depthRange")             # metres (near, far)
+        if dr is not None:
+            asset["near_m"], asset["far_m"] = float(dr[0]), float(dr[1])
 
-    p["cx"], p["cy"] = p["width"] / 2.0, p["height"] / 2.0   # centred principal point
+    # Camera values win; constants fill only what the camera did not provide.
+    used_fallback = [k for k in fallback if k not in asset]
+    p = {**fallback, **asset}
+    p["cx"], p["cy"] = p["width"] / 2.0, p["height"] / 2.0    # centred principal point
 
-    dr = _attr("isaac:depthRange")                 # metres (near, far)
-    if dr is not None:
-        p["near_m"], p["far_m"] = float(dr[0]), float(dr[1])
-
-    print(f"  [params] {cam_path.split('/')[-1]:28s} {p['width']}x{p['height']}  "
-          f"fx={p['fx']:.1f}px  range={p['near_m']}-{p['far_m']} m")
+    name = cam_path.split("/")[-1]
+    if not used_fallback:
+        src = "from camera"
+    elif BAKE_INTRINSICS:
+        src = f"baked default: {','.join(used_fallback)}"
+    else:
+        src = f"WARN built-in fallback (asset missing): {','.join(used_fallback)}"
+    print(f"  [params] {name:28s} {p['width']}x{p['height']}  "
+          f"fx={p['fx']:.1f}px  range={p['near_m']}-{p['far_m']} m  ({src})")
     return p
 
 
@@ -934,12 +947,17 @@ class _WebViewer:
         self._sub = None
         self._httpd = None
 
-        # One render product + depth annotator per camera, at the camera's own
-        # resolution (no downscaling) so the preview matches the real sensor.
+        # One render product + depth annotator per camera.  Full (original)
+        # resolution by default; WEB_VIEWER_MAX_W caps the width if set.
         for unit in units:
             for key, cam in unit["cams"].items():
                 p = cam["params"]
-                vw, vh = int(p["width"]), int(p["height"])
+                fw, fh = int(p["width"]), int(p["height"])
+                if WEB_VIEWER_MAX_W and fw > WEB_VIEWER_MAX_W:
+                    scale = WEB_VIEWER_MAX_W / float(fw)
+                    vw, vh = max(1, int(fw * scale)), max(1, int(fh * scale))
+                else:
+                    scale, vw, vh = 1.0, fw, fh
                 try:
                     rp = rep.create.render_product(cam["path"], (vw, vh))
                     annot = rep.AnnotatorRegistry.get_annotator("distance_to_image_plane")
@@ -950,9 +968,10 @@ class _WebViewer:
                 self._cams.append(dict(
                     id=f"{unit['unit_id']}_{key}", label=f"{unit['unit_id']}  {key}",
                     width=vw, height=vh, near=p["near_m"], far=p["far_m"],
-                    # intrinsics straight from the camera (browser back-projects the
-                    # depth into a metric point cloud)
-                    fx=p["fx"], fy=p["fy"], cx=p["cx"], cy=p["cy"], annot=annot))
+                    # intrinsics scaled to the preview resolution (scale=1.0 at full
+                    # res), so the browser back-projects depth into a metric cloud
+                    fx=p["fx"] * scale, fy=p["fy"] * scale,
+                    cx=p["cx"] * scale, cy=p["cy"] * scale, annot=annot))
 
         if not self._cams:
             raise RuntimeError("no camera annotators could be created")
