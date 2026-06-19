@@ -8,13 +8,13 @@ Run this from the Isaac Sim Script Editor.  First load the example scene:
 
 then run this file.  It runs in two steps:
 
-  1. Cameras — reference the same DepthVista Helix iToF USD the Create menu uses:
+  1. Cameras - reference the same DepthVista Helix iToF USD the Create menu uses:
        /World/Ur10Table/ur10/ee_link/DEPTHVISTA_HELIX   (wrist, eye-in-hand)
            translate (0.07, 0.055, 0.0)    rotateXYZ (90, 90, 0)
        /World/Ur10Table/pallet/DEPTHVISTA_HELIX          (over the pallet, eye-to-hand)
            translate (0.0, 0.0, 1.5)        rotateXYZ (-90, 0, 0)
 
-  2. Floating-camera stand — a referenced Isaac Stand prop plus a cylinder arm:
+  2. Floating-camera stand - a referenced Isaac Stand prop plus a cylinder arm:
        /World/Ur10Table/dolly/Stand     (referenced stand_instanceable.usd)
            translate (1.2, 0.0, 1.88193) rotateXYZ (0, 0, 0)  scale (1.2, 1.2, 3.66786)
        /World/Ur10Table/dolly/Cylinder  (Create > Mesh > Cylinder)
@@ -94,7 +94,7 @@ def _set_trs(prim, translate, rotate, scale):
     """Author a clean local T * R * S on prim (overrides any existing transform).
 
     Ops use double precision so they match referenced assets (e.g. the Stand)
-    whose existing xformOps are ``double3`` — mixing float/double raises an error.
+    whose existing xformOps are ``double3`` - mixing float/double raises an error.
     """
     d = UsdGeom.XformOp.PrecisionDouble
     xform = UsdGeom.Xformable(prim)
@@ -107,7 +107,7 @@ def _set_trs(prim, translate, rotate, scale):
 def _example_loaded(stage) -> bool:
     if stage.GetPrimAtPath(EXAMPLE_ROOT).IsValid():
         return True
-    print(f"[econ] {EXAMPLE_ROOT} missing — load 'UR10 Palletizing' first "
+    print(f"[econ] {EXAMPLE_ROOT} missing - load 'UR10 Palletizing' first "
           "(Window -> Robotics Examples -> ... -> Load), then re-run.")
     return False
 
@@ -179,9 +179,9 @@ def main():
         return
     scale = _unit_scale(stage, asset)
 
-    # Step 1 — cameras
+    # Step 1 - cameras
     added = [s["path"] for s in CAMERAS if _add_camera(stage, s, asset, scale)]
-    # Step 2 — floating-camera stand
+    # Step 2 - floating-camera stand
     added += [s["path"] for s in PROPS if _add_prop(stage, s)]
 
     if added:

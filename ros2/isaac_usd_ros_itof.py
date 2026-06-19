@@ -71,7 +71,7 @@ IMU_READ_GRAVITY = True     # True  -> realistic accel incl. gravity (~9.81 g at
 # On-screen IMU readout — 3 settings.  Keep IMU_PRINT_CAMERAS to a single camera;
 # more than one overlay is unreadable on screen.
 #   IMU_PRINT_CAMERAS : []=none   [0, 2]=those camera indices   "all"=every camera
-IMU_PRINT_CAMERAS     = [0]
+IMU_PRINT_CAMERAS     = [1]
 IMU_LINEAR_TO_SCREEN  = True    # overlay linear acceleration for the selected camera(s)
 IMU_ANGULAR_TO_SCREEN = False   # overlay angular velocity for the selected camera(s)
 
@@ -552,7 +552,7 @@ def _add_imu_readout(graph_path: str, show_on_screen: bool):
         except Exception:
             remove("ToStrAng", "ToStrLin", "PrintAng", "PrintLin")
     if print_type is None:
-        print("  [imu] readout skipped — no PrintText node type available (publishing OK)")
+        print("  [imu] readout skipped - no PrintText node type available (publishing OK)")
         return
 
     # Data + exec wiring.
@@ -602,7 +602,7 @@ def _check_bridge() -> bool:
         ok = omni.kit.app.get_app().get_extension_manager() \
                  .is_extension_enabled("isaacsim.ros2.bridge")
         if not ok:
-            print("[ERROR] isaacsim.ros2.bridge not enabled — "
+            print("[ERROR] isaacsim.ros2.bridge not enabled - "
                   "Window -> Extensions -> search 'ros2 bridge' -> Enable")
         return ok
     except Exception:
@@ -679,7 +679,7 @@ class _HotkeyWatcher:
             .create_subscription_to_pop(self._poll, name="ros2_itof_hotkey")
         print("[hotkey] Ctrl+Alt+R stops ROS2"
               + (" + scene" if STOP_SIM_ON_EXIT else "")
-              + " — only while the Isaac Sim window has focus (click the viewport "
+              + " - only while the Isaac Sim window has focus (click the viewport "
                 "first); otherwise call teardown() directly.")
 
     def _poll(self, _):
@@ -697,7 +697,7 @@ class _HotkeyWatcher:
         pressed = r and ctrl and alt
         if pressed and not self._pressed:
             self._stopping = True   # block re-entry before teardown drops _sub
-            print("\n[hotkey] Ctrl+Alt+R — stopping ROS2 ->")
+            print("\n[hotkey] Ctrl+Alt+R - stopping ROS2 ->")
             teardown()
             return
         self._pressed = pressed
@@ -1064,7 +1064,7 @@ class _WebViewer:
 async def main():
     """Discover every DepthVista unit and build all ROS 2 publisher graphs."""
     print("\n" + "--" * 72)
-    print("  isaac_usd_ros_itof.py  —  e-con DepthVista Helix iToF")
+    print("  isaac_usd_ros_itof.py  -  e-con DepthVista Helix iToF")
     print("  cameras auto-detected (GMSL / USB / unsuffixed) | Sensor: onsemi AF0130")
     print(f"  IMU 6-axis 416 Hz  |  Domain {ROS2_DOMAIN_ID}  |  TF parent: {TF_WORLD_FRAME}")
     print("--" * 72 + "\n")
@@ -1088,7 +1088,7 @@ async def main():
     mpu = _stage_mpu(stage)
     print(f"  metersPerUnit = {mpu}")
     if abs(mpu - 1.0) > 1e-6:
-        print("  WARNING: stage not in metres — depth values will be in stage units")
+        print("  WARNING: stage not in metres - depth values will be in stage units")
 
     # ── STEP 3 — Discover units ──────────────────────────────────────────────
     print("\n[STEP 3] Discovering DepthVista units (GMSL + USB) ->")
@@ -1218,7 +1218,7 @@ def _print_summary(units: list):
                                             ("linAcc", IMU_LINEAR_TO_SCREEN)) if on)
 
     print("\n" + "--" * 72)
-    print(f"  ROS 2 ACTIVE  —  {len(units)} unit(s), {n_graphs} graphs\n")
+    print(f"  ROS 2 ACTIVE  -  {len(units)} unit(s), {n_graphs} graphs\n")
     for unit in units:
         print(f"  ── UNIT {unit['unit_id']}   frame={unit['unit_id']} -> "
               f"{TF_WORLD_FRAME}   ({unit['root']})")
