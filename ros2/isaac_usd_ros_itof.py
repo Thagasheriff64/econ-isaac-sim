@@ -94,10 +94,9 @@ STOP_SIM_ON_EXIT = True     # True  -> Ctrl+Alt+R / teardown() also stops the
 # It runs alongside ROS 2 (purely additive) and lets you inspect depth without
 # RViz: open the printed URL to see each camera's colour-mapped depth (with a
 # distance probe) and interactive point clouds.  No dependency beyond NumPy.
-WEB_VIEWER       = True     # True -> start the localhost viewer
-WEB_VIEWER_PORT  = 8211      # served at http://localhost:<port>/
-WEB_VIEWER_HZ    = 10        # frame refresh rate (Hz)
-WEB_VIEWER_MAX_W = 640       # cap preview width (px); keeps the extra render light
+WEB_VIEWER      = True      # True -> start the localhost viewer
+WEB_VIEWER_PORT = 8211      # served at http://localhost:<port>/
+WEB_VIEWER_HZ   = 10        # frame refresh rate (Hz); renders at the camera's full resolution
 
 # Asset prim names mapped to a short type tag.  A unit is any prim whose name
 # matches one of these (or "<name>_NN" for duplicates) and has a ToF_Camera child.
@@ -935,12 +934,12 @@ class _WebViewer:
         self._sub = None
         self._httpd = None
 
-        # One render product + depth annotator per camera (capped resolution).
+        # One render product + depth annotator per camera, at the camera's own
+        # resolution (no downscaling) so the preview matches the real sensor.
         for unit in units:
             for key, cam in unit["cams"].items():
                 p = cam["params"]
-                scale = min(1.0, WEB_VIEWER_MAX_W / float(p["width"]))
-                vw, vh = max(1, int(p["width"] * scale)), max(1, int(p["height"] * scale))
+                vw, vh = int(p["width"]), int(p["height"])
                 try:
                     rp = rep.create.render_product(cam["path"], (vw, vh))
                     annot = rep.AnnotatorRegistry.get_annotator("distance_to_image_plane")
@@ -951,10 +950,9 @@ class _WebViewer:
                 self._cams.append(dict(
                     id=f"{unit['unit_id']}_{key}", label=f"{unit['unit_id']}  {key}",
                     width=vw, height=vh, near=p["near_m"], far=p["far_m"],
-                    # intrinsics scaled to the (capped) preview resolution, so the
-                    # browser can back-project depth into a metric point cloud
-                    fx=p["fx"] * scale, fy=p["fy"] * scale,
-                    cx=p["cx"] * scale, cy=p["cy"] * scale, annot=annot))
+                    # intrinsics straight from the camera (browser back-projects the
+                    # depth into a metric point cloud)
+                    fx=p["fx"], fy=p["fy"], cx=p["cx"], cy=p["cy"], annot=annot))
 
         if not self._cams:
             raise RuntimeError("no camera annotators could be created")

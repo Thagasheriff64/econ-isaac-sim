@@ -156,7 +156,7 @@ alongside ROS 2. Set it to `False` to disable.
   reads the metric distance.
 - **Point clouds** — per-camera checkboxes; interactive 3D (rotate / zoom / pan) with
   **Download .ply**.
-- **Settings** — `WEB_VIEWER`, `WEB_VIEWER_PORT`, `WEB_VIEWER_HZ`, `WEB_VIEWER_MAX_W`.
+- **Settings** — `WEB_VIEWER`, `WEB_VIEWER_PORT`, `WEB_VIEWER_HZ`.
 
 The 3D view loads three.js from a CDN (needs internet); the 2D tiles work offline.
 
