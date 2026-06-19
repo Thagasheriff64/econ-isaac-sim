@@ -75,11 +75,18 @@ IMU_PRINT_CAMERAS     = [0]
 IMU_LINEAR_TO_SCREEN  = True    # overlay linear acceleration for the selected camera(s)
 IMU_ANGULAR_TO_SCREEN = False   # overlay angular velocity for the selected camera(s)
 
-# --- Depth clipping -----------------------------------------------------------
+# --- Camera intrinsics --------------------------------------------------------
+# True  -> bake the AF0130 aperture/focal length/offsets (and clip, below) onto
+#          each camera, guaranteeing CameraInfo even on a non-baked asset.
+# False -> leave the camera untouched and just stream it as authored in the USD.
+#          The shipped DepthVista asset already has the correct intrinsics, so
+#          False is safe and never overrides your manual camera params.
+BAKE_INTRINSICS = True
+
 # Render-frustum near clip, in metres — an OPTICS value, NOT the ToF min range.
 # Kept small so geometry closer than the ToF minimum still renders (you see the
 # near object) instead of being culled, which makes the camera "see through" it.
-# Set None to leave the asset's own clipping range untouched.
+# Only applied when BAKE_INTRINSICS is True; set None to leave the clip untouched.
 RENDER_NEAR_M = 0.01
 
 # --- Lifecycle ----------------------------------------------------------------
@@ -1083,12 +1090,15 @@ async def main():
         ))
         print(f"  unit[{index}] {unit_id}   {root}   IMU: {imu_prim or 'NOT FOUND'}")
 
-    # ── STEP 4 — Bake intrinsics ─────────────────────────────────────────────
-    print("\n[STEP 4] Baking intrinsics …")
-    for unit in units:
-        for cam in unit["cams"].values():
-            _bake_intrinsics(stage, cam["path"], cam["params"])
-    await _wait(5)
+    # ── STEP 4 — Bake intrinsics (optional) ──────────────────────────────────
+    if BAKE_INTRINSICS:
+        print("\n[STEP 4] Baking intrinsics …")
+        for unit in units:
+            for cam in unit["cams"].values():
+                _bake_intrinsics(stage, cam["path"], cam["params"])
+        await _wait(5)
+    else:
+        print("\n[STEP 4] Baking intrinsics … SKIPPED (streaming camera as authored)")
 
     # ── STEP 5 — Verify IMU sensors ──────────────────────────────────────────
     print("\n[STEP 5] Verifying IMU sensors …")
