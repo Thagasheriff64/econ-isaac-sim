@@ -76,18 +76,13 @@ IMU_LINEAR_TO_SCREEN  = True    # overlay linear acceleration for the selected c
 IMU_ANGULAR_TO_SCREEN = False   # overlay angular velocity for the selected camera(s)
 
 # --- Camera intrinsics --------------------------------------------------------
-# True  -> bake the AF0130 aperture/focal length/offsets (and clip, below) onto
-#          each camera, guaranteeing CameraInfo even on a non-baked asset.
-# False -> leave the camera untouched and just stream it as authored in the USD.
-#          The shipped DepthVista asset already has the correct intrinsics, so
-#          False is safe and never overrides your manual camera params.
+# The node uses each camera's OWN authored intrinsics as the default; whatever a
+# camera does not provide falls back to the baked AF0130 SENSOR CONSTANTS below.
+#   BAKE_INTRINSICS True  -> additionally write those constants (aperture / focal
+#                            length / offsets / clip) onto the camera, so even a
+#                            raw camera gets correct CameraInfo.
+#   BAKE_INTRINSICS False -> leave the camera untouched and stream it as authored.
 BAKE_INTRINSICS = False
-
-# Render-frustum near clip, in metres — an OPTICS value, NOT the ToF min range.
-# Kept small so geometry closer than the ToF minimum still renders (you see the
-# near object) instead of being culled, which makes the camera "see through" it.
-# Only applied when BAKE_INTRINSICS is True; set None to leave the clip untouched.
-RENDER_NEAR_M = 0.01
 
 # --- Lifecycle ----------------------------------------------------------------
 STOP_SIM_ON_EXIT = True     # True  -> Ctrl+Alt+R / teardown() also stops the
@@ -225,11 +220,11 @@ def _find_camera(stage, unit_root: str, prim_name: str) -> "str | None":
 
 def _read_cam_params(stage, cam_path: str, fallback: dict) -> dict:
     """Read intrinsics / resolution / depth range from the camera's own authored
-    attributes — the USD asset is the source of truth — falling back to
-    ``fallback`` for anything not present.
+    attributes — these are the default.  Anything the camera does not provide
+    falls back to ``fallback`` (the baked AF0130 SENSOR CONSTANTS).
 
     The DepthVista asset authors ``info:resolution``, ``info:fx_px`` and
-    ``isaac:depthRange``; this is what lets the node stream the camera as-is
+    ``isaac:depthRange``, so the node streams the camera as-is
     (``BAKE_INTRINSICS = False``) instead of hard-coding the sensor constants.
     """
     p = dict(fallback)
@@ -311,17 +306,10 @@ def _bake_intrinsics(stage, cam_path: str, params: dict):
     cam.GetFocalLengthAttr().Set(float(_FL_MM))
     cam.GetHorizontalApertureOffsetAttr().Set(0.0)
     cam.GetVerticalApertureOffsetAttr().Set(0.0)
-    # Near clip is the render-frustum optics (RENDER_NEAR_M), NOT the ToF min
-    # range — keeping it small avoids culling close geometry (no see-through).
-    # The ToF range stays the camera's near_m/far_m, used for the depth colouring.
-    if RENDER_NEAR_M is not None:
-        near = RENDER_NEAR_M / mpu
-        cam.GetClippingRangeAttr().Set(Gf.Vec2f(near, params["far_m"] / mpu))
-        clip = f"{near:.3f}-{params['far_m']/mpu:.3f}"
-    else:
-        clip = "asset"
+    near, far = params["near_m"] / mpu, params["far_m"] / mpu
+    cam.GetClippingRangeAttr().Set(Gf.Vec2f(near, far))
     print(f"  [bake] {cam_path.split('/')[-1]:32s} fl={_FL_MM}mm "
-          f"fx={params['fx']:.1f}px  clip={clip} wu")
+          f"fx={params['fx']:.1f}px  clip={near:.3f}-{far:.3f} wu")
 
 
 async def _wait(frames: int):
