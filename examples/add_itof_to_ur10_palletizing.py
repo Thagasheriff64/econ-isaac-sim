@@ -42,7 +42,8 @@ CAMERAS = [
     {
         "path": "/World/Ur10Table/ur10/ee_link/DEPTHVISTA_HELIX",
         "translate": (0.07, 0.055, 0.0),
-        "rotate":    (90.0, 90.0, 0.0),
+        # "rotate":    (90.0, 90.0, 0.0),
+        "rotate":    (180.0, -90.0, 90.0),
     },
     {
         "path": "/World/Ur10Table/pallet/DEPTHVISTA_HELIX",
