@@ -13,7 +13,7 @@ DepthVista Helix iToF cameras to Isaac Sim's **UR10 Palletizing** example — an
 eye-in-hand camera on the wrist and an eye-to-hand camera over the pallet — plus
 a camera stand for the over-pallet view.
 
-![UR10 Palletizing scene with the iToF cameras and the camera stand](../docs/Example1_Palletization/00-overview.png)
+![UR10 Palletizing scene with the iToF cameras and the camera stand](../docs/Example1_Palletization/images/00-overview.png)
 
 ### What it adds
 
@@ -39,26 +39,26 @@ script replaces what it created, so it is idempotent.
 
 Open the Robotics Examples browser via **Window → Robotics Examples**:
 
-![Window menu, Robotics Examples](../docs/Example1_Palletization/01-window-robotics-examples.png)
+![Window menu, Robotics Examples](../docs/Example1_Palletization/images/01-window-robotics-examples.png)
 
 Select **CORTEX → UR10 Palletizing**, then click **LOAD** (Load World and Task):
 
-![Robotics Examples browser, UR10 Palletizing, Load](../docs/Example1_Palletization/02-load-ur10-palletizing.png)
+![Robotics Examples browser, UR10 Palletizing, Load](../docs/Example1_Palletization/images/02-load-ur10-palletizing.png)
 
 ### Step 2 — Run the script
 
 Open the Script Editor (**Window → Script Editor**):
 
-![Window menu, Script Editor](../docs/Example1_Palletization/03-window-script-editor.png)
+![Window menu, Script Editor](../docs/Example1_Palletization/images/03-window-script-editor.png)
 
 Choose **File → Open**:
 
-![Script Editor, File, Open](../docs/Example1_Palletization/04-script-editor-open.png)
+![Script Editor, File, Open](../docs/Example1_Palletization/images/04-script-editor-open.png)
 
 Select `econ-isaac-sim/examples/add_itof_to_ur10_palletizing.py`, then **Run**
 (or **Ctrl+Enter**):
 
-![add_itof_to_ur10_palletizing.py loaded in the Script Editor](../docs/Example1_Palletization/05-example-script-loaded.png)
+![add_itof_to_ur10_palletizing.py loaded in the Script Editor](../docs/Example1_Palletization/images/05-example-script-loaded.png)
 
 The console reports each prim it adds:
 
@@ -72,23 +72,25 @@ The console reports each prim it adds:
 
 The two cameras and the camera stand now sit in the palletizing scene:
 
-![Cameras and camera stand in the scene](../docs/Example1_Palletization/06-result-cameras-stand.png)
+![Cameras and camera stand in the scene](../docs/Example1_Palletization/images/06-result-cameras-stand.png)
 
 ### Output — stream and visualise
 
-Press **Play**, then run [`../ros2/isaac_usd_ros_itof.py`](../ros2/isaac_usd_ros_itof.py)
-from the Script Editor. It publishes ROS 2 depth / point cloud / camera_info /
-IMU for both cameras and serves the browser depth viewer.
+With the cameras in the scene, press **Play** and run
+[`../ros2/isaac_usd_ros_itof.py`](../ros2/isaac_usd_ros_itof.py) from the Script
+Editor. It publishes ROS 2 depth / point cloud / camera_info / IMU for both
+cameras and serves the browser depth viewer.
 
 **Browser depth viewer** (`http://localhost:8211/`) — live colour-mapped depth
-tiles and interactive point clouds for each camera, no RViz needed:
+tiles and interactive point clouds, no RViz needed. *(Click to watch the full
+recording.)*
 
-![Browser depth viewer alongside the scene](../docs/Example1_Palletization/07-web-viewer-output.png)
+[![Browser depth viewer demo](../docs/Example1_Palletization/gifs/web-viewer.gif)](../docs/Example1_Palletization/videos/web-viewer-demo.mp4)
 
-**RViz** — the per-camera point clouds, fused in the `world` frame, with the
-published topics listed in the Displays panel:
+**RViz** — the per-camera point clouds fused in the `world` frame, with the
+published topics in the Displays panel. *(Click to watch the full recording.)*
 
-![RViz point clouds and the topic list](../docs/Example1_Palletization/08-rviz-pointclouds-topics.png)
+[![RViz point clouds demo](../docs/Example1_Palletization/gifs/rviz.gif)](../docs/Example1_Palletization/videos/rviz-demo.mp4)
 
 Topics (two cameras → `cam0` over the pallet, `cam1` on the wrist):
 
@@ -112,7 +114,8 @@ $ ros2 topic list
 /tof/cam1/imu
 ```
 
-**Demo video:** [▶ palletizing with the iToF cameras (webm)](../docs/Example1_Palletization/demo-palletizing.webm)
+> The GIFs are short, sped-up previews. The full recordings live in
+> [`../docs/Example1_Palletization/videos/`](../docs/Example1_Palletization/videos).
 
 ### Notes
 
@@ -120,3 +123,12 @@ $ ros2 topic list
   scene isn't loaded yet; do Step 1 and re-run.
 - Edit the `CAMERAS` / `PROPS` tables at the top of the script to change the
   mounting transforms.
+
+### Media layout
+
+```
+docs/Example1_Palletization/
+├── images/   step + result screenshots (00–06)
+├── gifs/     short sped-up previews (web-viewer, rviz)
+└── videos/   full recordings (web-viewer-demo.mp4, rviz-demo.mp4)
+```
