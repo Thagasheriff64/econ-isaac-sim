@@ -82,13 +82,22 @@ Editor. It publishes ROS 2 depth / point cloud / camera_info / IMU for both
 cameras and serves the browser depth viewer.
 
 **Browser depth viewer** (`http://localhost:8211/`) — live colour-mapped depth
-tiles and interactive point clouds, no RViz needed. *(Click to watch the full
-recording.)*
+tiles and interactive point clouds, no RViz needed:
+
+![Browser depth viewer with depth tiles and point clouds](../docs/Example1_Palletization/images/07-web-viewer-output.png)
+
+*Fast-forward preview — click to watch the full recording:*
 
 [![Browser depth viewer demo](../docs/Example1_Palletization/gifs/web-viewer.gif)](../docs/Example1_Palletization/videos/web-viewer-demo.mp4)
 
 **RViz** — the per-camera point clouds fused in the `world` frame, with the
-published topics in the Displays panel. *(Click to watch the full recording.)*
+published topics in the Displays panel:
+
+![RViz point clouds and the topic list](../docs/Example1_Palletization/images/08-rviz-pointclouds-topics.png)
+
+![RViz alongside the running Isaac Sim scene](../docs/Example1_Palletization/images/09-rviz-viewer-output.png)
+
+*Fast-forward preview — click to watch the full recording:*
 
 [![RViz point clouds demo](../docs/Example1_Palletization/gifs/rviz.gif)](../docs/Example1_Palletization/videos/rviz-demo.mp4)
 
