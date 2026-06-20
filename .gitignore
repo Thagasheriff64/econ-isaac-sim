@@ -10,4 +10,4 @@ __pycache__/
 Pictures/
 
 # Raw screen recordings (commit the compressed mp4 in videos/ instead)
-docs/**/*.webm
+docs/Example1_Palletization/*.webm

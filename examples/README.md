@@ -88,7 +88,7 @@ tiles and interactive point clouds, no RViz needed:
 
 *Fast-forward preview — click to watch the full recording:*
 
-[![Browser depth viewer demo](../docs/Example1_Palletization/gifs/web-viewer.gif)](../docs/Example1_Palletization/videos/web-viewer-demo.mp4)
+[![Browser depth viewer demo](../docs/Example1_Palletization/gifs/web-viewer.gif)](../docs/Example1_Palletization/videos/web-viewer-demo.webm)
 
 **RViz** — the per-camera point clouds fused in the `world` frame, with the
 published topics in the Displays panel:
@@ -99,7 +99,7 @@ published topics in the Displays panel:
 
 *Fast-forward preview — click to watch the full recording:*
 
-[![RViz point clouds demo](../docs/Example1_Palletization/gifs/rviz.gif)](../docs/Example1_Palletization/videos/rviz-demo.mp4)
+[![RViz point clouds demo](../docs/Example1_Palletization/gifs/rviz.gif)](../docs/Example1_Palletization/videos/rviz-demo.webm)
 
 Topics (two cameras → `cam0` over the pallet, `cam1` on the wrist):
 
@@ -137,7 +137,7 @@ $ ros2 topic list
 
 ```
 docs/Example1_Palletization/
-├── images/   step + result screenshots (00–06)
-├── gifs/     short sped-up previews (web-viewer, rviz)
-└── videos/   full recordings (web-viewer-demo.mp4, rviz-demo.mp4)
+├── images/   step + output screenshots (00–09)
+├── gifs/     fast-forward (×4) previews of the first ~2.3 min
+└── videos/   recordings, first ~2.3 min (web-viewer-demo.webm, rviz-demo.webm)
 ```
