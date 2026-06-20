@@ -8,10 +8,12 @@ extension (see the [main README](../README.md)).
 
 ## Example 1 — DepthVista cameras and an over-pallet camera stand on UR10 Palletizing
 
-[`add_itof_to_ur10_palletizing.py`](add_itof_to_ur10_palletizing.py) adds two
-DepthVista Helix iToF cameras to Isaac Sim's **UR10 Palletizing** example — an
-eye-in-hand camera on the wrist and an eye-to-hand camera over the pallet —
-together with a stand that carries the over-pallet camera.
+Isaac Sim's **UR10 Palletizing** example (Robotics Examples → CORTEX) runs a UR10
+arm that picks boxes and stacks them onto a pallet using Cortex behaviours.
+[`add_itof_to_ur10_palletizing.py`](add_itof_to_ur10_palletizing.py) augments
+that scene with two DepthVista Helix iToF cameras — an eye-in-hand camera on the
+wrist and an eye-to-hand camera over the pallet — together with a stand that
+carries the over-pallet camera.
 
 ![UR10 Palletizing scene with the iToF cameras and the camera stand](../docs/Example1_Palletization/images/00-overview.png)
 
@@ -84,18 +86,11 @@ both cameras, and serves the browser depth viewer.
 **Browser depth viewer** (`http://localhost:8211/`) — live, colour-mapped depth
 tiles and interactive point clouds, with no RViz required:
 
-![Browser depth viewer with depth tiles and point clouds](../docs/Example1_Palletization/images/07-web-viewer-output.png)
+![Browser depth viewer](../docs/Example1_Palletization/gifs/web-viewer.gif)
 
-![Browser depth viewer (×4 preview of the first ~2.3 min)](../docs/Example1_Palletization/gifs/web-viewer.gif)
+**RViz** — the per-camera point clouds fused in the `world` frame:
 
-**RViz** — the per-camera point clouds fused in the `world` frame, with the
-published topics listed in the Displays panel:
-
-![RViz point clouds and the topic list](../docs/Example1_Palletization/images/08-rviz-pointclouds-topics.png)
-
-![RViz alongside the running Isaac Sim scene](../docs/Example1_Palletization/images/09-rviz-viewer-output.png)
-
-![RViz point clouds (×4 preview of the first ~2.3 min)](../docs/Example1_Palletization/gifs/rviz.gif)
+![RViz point clouds](../docs/Example1_Palletization/gifs/rviz.gif)
 
 Published topics (two cameras → `cam0` over the pallet, `cam1` on the wrist):
 
@@ -121,24 +116,5 @@ $ ros2 topic list
 
 ### Demo videos
 
-The animations above are short ×4 previews. The clips below are the first
-~2.3 minutes of each recording, at original quality:
-
 - ▶ [**Browser depth viewer**](../docs/Example1_Palletization/videos/web-viewer-demo.webm) — live depth tiles and interactive point clouds.
 - ▶ [**RViz point clouds**](../docs/Example1_Palletization/videos/rviz-demo.webm) — the fused point clouds and the published topics.
-
-### Notes
-
-- If the script prints `… missing — load 'UR10 Palletizing' first`, the example
-  scene is not loaded yet; complete Step 1 and re-run.
-- Edit the `CAMERAS` and `PROPS` tables at the top of the script to change the
-  mounting transforms.
-
-### Media layout
-
-```
-docs/Example1_Palletization/
-├── images/   step and output screenshots (00–09)
-├── gifs/     ×4 fast-forward previews of the first ~2.3 min
-└── videos/   recordings of the first ~2.3 min (web-viewer-demo.webm, rviz-demo.webm)
-```
