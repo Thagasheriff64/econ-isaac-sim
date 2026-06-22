@@ -166,6 +166,12 @@ The 3D view loads three.js from a CDN (needs internet); the 2D tiles work offlin
 - **Stop** — `Ctrl+Alt+R` (viewport focused) or `teardown()`.
 - **Restart** — run the file again; graphs, hotkey, and viewer reset automatically.
 
+## Examples
+
+- [**UR10 Palletizing**](examples/README.md) — add two DepthVista cameras (wrist
+  and over-pallet) and a camera stand to Isaac Sim's UR10 Palletizing example,
+  then stream to ROS 2 and the browser viewer.
+
 ## Uninstallation
 
 ```bash
