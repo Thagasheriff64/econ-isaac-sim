@@ -852,9 +852,9 @@ class PclCard{
 
     card.querySelector('.ps').oninput=e=>mat.size=+e.target.value;
     card.querySelector('.dl').onclick=()=>this.download();
-    this._resize=()=>{ const w=canvas.clientWidth,h=canvas.clientHeight;
+    this._resize=()=>{ const w=canvas.clientWidth||460,h=canvas.clientHeight||360;
       renderer.setSize(w,h,false); view.aspect=w/h; view.updateProjectionMatrix(); };
-    addEventListener('resize', this._resize);
+    new ResizeObserver(this._resize).observe(canvas);   // recovers if laid out 0-sized
     this.poll=setInterval(()=>this.tick(), 1000/HZ);
     this._resize();
     const loop=()=>{ if(!this.alive) return; requestAnimationFrame(loop);
@@ -891,8 +891,12 @@ class PclCard{
     this.info.textContent = n.toLocaleString()+' points';
     if(this.needFrame && n>0){
       this.geom.computeBoundingSphere(); const s=this.geom.boundingSphere;
+      const r=Math.max(s.radius,0.05);
       this.controls.target.copy(s.center);
-      this.view.position.set(s.center.x, s.center.y, s.center.z + Math.max(s.radius*2.2, 0.5));
+      this.view.position.set(s.center.x, s.center.y, s.center.z + r*2.2);
+      this.view.near=Math.max(r/100,0.001); this.view.far=r*100;  // clip scaled to scene
+      this.view.updateProjectionMatrix();
+      this.controls.minDistance=r*0.15; this.controls.maxDistance=r*25;  // no fly-through/black
       this.controls.update(); this.needFrame=false;
     }
   }

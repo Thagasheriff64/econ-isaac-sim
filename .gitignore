@@ -6,8 +6,3 @@ __pycache__/
 *.pyc
 .DS_Store
 
-# Local raw screenshots (curated copies live in docs/images/)
-Pictures/
-
-# Raw screen recordings (commit the compressed mp4 in videos/ instead)
-docs/Example1_Palletization/*.webm

@@ -83,9 +83,8 @@ class Extension(omni.ext.IExt):
 
     @staticmethod
     def _compensate_units(stage, xform, usd_path: str):
-        """USD references do not auto-rescale across a metersPerUnit mismatch, so a
-        mm asset (metersPerUnit=0.001) lands 1000x too large in a meters stage.
-        Bake the ratio onto the wrapper Xform's scale to compensate."""
+        """Scale the wrapper to compensate a metersPerUnit mismatch (USD references do
+        not auto-rescale). Metre-native assets give ratio 1.0, so no scale is added."""
         stage_mpu = UsdGeom.GetStageMetersPerUnit(stage) or 1.0
         asset_mpu = UsdGeom.GetStageMetersPerUnit(Usd.Stage.Open(usd_path)) or 1.0
         ratio = asset_mpu / stage_mpu
