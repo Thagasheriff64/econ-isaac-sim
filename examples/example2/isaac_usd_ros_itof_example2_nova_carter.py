@@ -58,10 +58,13 @@ except ImportError:
 # --- ROS 2 / TF ---------------------------------------------------------------
 ROS2_DOMAIN_ID = 0          # must match ROS_DOMAIN_ID in your shell
 TOPIC_ROOT     = "/tof"     # root namespace for all camera/imu topics
-TF_WORLD_FRAME = "world"    # global/parent frame name (RViz "Fixed Frame")
-TF_PARENT_PRIM = ""         # "" -> frames are world-relative.  Set a prim path
-                            # (e.g. a robot base) to parent all frames under it;
-                            # that prim is then named TF_WORLD_FRAME.
+# TF_WORLD_FRAME = "world"    # global/parent frame name (RViz "Fixed Frame")
+# TF_PARENT_PRIM = ""         # "" -> frames are world-relative.  Set a prim path
+#                             # (e.g. a robot base) to parent all frames under it;
+#                             # that prim is then named TF_WORLD_FRAME.
+TF_PARENT_PRIM = "/World/Nova_Carter_ROS/chassis_link"   # the base the cameras are mounted on
+TF_WORLD_FRAME = "base_link"                              # match the Carter's base frame name
+
 
 # --- IMU ----------------------------------------------------------------------
 IMU_READ_GRAVITY = True     # True  -> realistic accel incl. gravity (~9.81 g at
@@ -80,6 +83,12 @@ IMU_ANGULAR_TO_SCREEN = False   # overlay angular velocity for the selected came
 # are the fallback.  BAKE_INTRINSICS=True writes those constants (focal/aperture/
 # offsets) onto a camera that lacks them so its CameraInfo is correct.
 BAKE_INTRINSICS = False
+
+# --- Depth range --------------------------------------------------------------
+# Override the published ToF range per resolution (DepthVista spec); only the max
+# takes effect -- it caps the far-clip (RViz + browser) via _cap_far.
+OVERRIDE_DEPTH_RANGE = True
+DEPTH_RANGE_M = {"highres": (0.2, 2.0), "longrange": (0.5, 6.0)}
 
 # --- Lifecycle ----------------------------------------------------------------
 STOP_SIM_ON_EXIT = True     # True  -> Ctrl+Alt+R / teardown() also stops the
@@ -1123,11 +1132,12 @@ async def main():
             if cam_path is None:
                 print(f"[FATAL] Camera '{cfg['prim_name']}' not found in {root}.")
                 return None
+            params = _read_cam_params(stage, cam_path, cfg["params"])
+            if OVERRIDE_DEPTH_RANGE and key in DEPTH_RANGE_M:
+                params["near_m"], params["far_m"] = DEPTH_RANGE_M[key]
             cams[key] = dict(
                 path       = cam_path,
-                # read intrinsics/resolution/range from the camera; constants are
-                # only the fallback (see _read_cam_params)
-                params     = _read_cam_params(stage, cam_path, cfg["params"]),
+                params     = params,              # range overridden above if enabled
                 frame_id   = unit_id,             # one flat frame per unit
                 topic_ns   = f"{ns_prefix}/{key}",
                 graph_path = f"{graph_root}/ROS2Camera_{graph_tag}_{key.upper()}",

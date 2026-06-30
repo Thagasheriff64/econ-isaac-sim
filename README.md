@@ -168,9 +168,12 @@ The 3D view loads three.js from a CDN (needs internet); the 2D tiles work offlin
 
 ## Examples
 
-- [**UR10 Palletizing**](examples/README.md) — add two DepthVista cameras (wrist
+- [**UR10 Palletizing**](examples/example1/README.md) — add two DepthVista cameras (wrist
   and over-pallet) and a camera stand to Isaac Sim's UR10 Palletizing example,
   then stream to ROS 2 and the browser viewer.
+- [**Nova Carter navigation**](examples/example2/README.md) — mount four
+  DepthVista cameras (front/back/left/right) on a Nova Carter, stream to ROS 2 under
+  the robot's TF tree, and navigate with the Nav2 `carter_navigation` package.
 
 ## Uninstallation
 
