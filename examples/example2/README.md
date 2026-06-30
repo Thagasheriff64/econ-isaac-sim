@@ -33,14 +33,10 @@ facing outward:
    depth / points / camera_info / IMU.
 
 This example script differs from the default
-[`../../ros2/isaac_usd_ros_itof.py`](../../ros2/isaac_usd_ros_itof.py) in two ways:
-
-- **TF parent** — frames are parented under the Carter's `base_link`
-  (`TF_PARENT_PRIM = /World/Nova_Carter_ROS/chassis_link`, `TF_WORLD_FRAME = base_link`),
-  so they join the robot's `map → odom → base_link` tree instead of a separate `world`.
-- **Depth range** — `OVERRIDE_DEPTH_RANGE` forces the published ToF range to the
-  DepthVista spec (highres 0.2–2.0 m, longrange 0.5–6.0 m), regardless of the
-  camera's authored `isaac:depthRange`.
+[`../../ros2/isaac_usd_ros_itof.py`](../../ros2/isaac_usd_ros_itof.py) only in its **TF
+parent** — frames are parented under the Carter's `base_link`
+(`TF_PARENT_PRIM = /World/Nova_Carter_ROS/chassis_link`, `TF_WORLD_FRAME = base_link`),
+so they join the robot's `map → odom → base_link` tree instead of a separate `world`.
 
 ### Navigation (Nav2)
 
