@@ -62,7 +62,7 @@ TOPIC_ROOT     = "/tof"     # root namespace for all camera/imu topics
 # TF_PARENT_PRIM = ""         # "" -> frames are world-relative.  Set a prim path
 #                             # (e.g. a robot base) to parent all frames under it;
 #                             # that prim is then named TF_WORLD_FRAME.
-TF_PARENT_PRIM = "/World/Nova_Carter_ROS_econ_iToF/chassis_link/base_link"  # the robot's REAL base_link
+TF_PARENT_PRIM = "/World/Nova_Carter_ROS_econ_iToF/chassis_link"  # the robot's REAL base_link
 TF_WORLD_FRAME = "base_link"                              # match the Carter's base frame name
 # NOTE: parent must be the actual base_link prim, NOT chassis_link -- naming
 # chassis_link "base_link" creates a 2nd base_link (the Carter already owns one
