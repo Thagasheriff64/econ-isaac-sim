@@ -58,13 +58,11 @@ except ImportError:
 # --- ROS 2 / TF ---------------------------------------------------------------
 ROS2_DOMAIN_ID = 0          # must match ROS_DOMAIN_ID in your shell
 TOPIC_ROOT     = "/tof"     # root namespace for all camera/imu topics
-# TF_WORLD_FRAME = "world"    # global/parent frame name (RViz "Fixed Frame")
-# TF_PARENT_PRIM = ""         # "" -> frames are world-relative.  Set a prim path
-#                             # (e.g. a robot base) to parent all frames under it;
-#                             # that prim is then named TF_WORLD_FRAME.
-TF_PARENT_PRIM = "/World/Nova_Carter_ROS_econ_iToF/chassis_link"  # the robot's REAL base_link
-TF_WORLD_FRAME = "base_link"                              # match the Carter's base frame name
-# NOTE: parent must be the actual base_link prim, NOT chassis_link -- naming
+TF_WORLD_FRAME = "base_link"   # published parent frame (RViz Fixed Frame); cameras hang off it
+TF_PARENT_PRIM = ""            # "" -> auto-find the robot base link (TF_PARENT_LINK) so the
+                               # parent isn't a hardcoded scene path.  Set a prim path to override.
+TF_PARENT_LINK = "base_link"   # prim name to auto-search for when TF_PARENT_PRIM == ""
+# NOTE: the parent must be the actual base_link prim, NOT chassis_link -- naming
 # chassis_link "base_link" creates a 2nd base_link (the Carter already owns one
 # via odom) and yields a base_link->base_link TF_SELF_TRANSFORM / cycle.
 
@@ -308,6 +306,27 @@ def _set_frame_name(stage, prim_path: str, name: str):
     prim = stage.GetPrimAtPath(prim_path)
     if prim and prim.IsValid():
         prim.CreateAttribute("isaac:nameOverride", Sdf.ValueTypeNames.String).Set(name)
+
+
+def _find_base_link(stage, link_name: str = "base_link", near_path: str = "") -> str:
+    """Auto-find the robot base-link prim (default 'base_link') so the camera TF
+    parent isn't a hardcoded scene path.  When several prims share the name, pick
+    the one whose path overlaps ``near_path`` most (the same robot as the cameras).
+    """
+    cands = [p.GetPath().pathString for p in stage.Traverse()
+             if p.GetName() == link_name]
+    if not cands:
+        return ""
+    if near_path:
+        def shared(c):
+            n = 0
+            for x, y in zip(c, near_path):
+                if x != y:
+                    break
+                n += 1
+            return n
+        return max(cands, key=shared)
+    return cands[0]
 
 
 def _bake_intrinsics(stage, cam_path: str, params: dict):
@@ -1201,10 +1220,18 @@ async def main():
     for unit in units:                       # per-camera subfolders (multi-camera only)
         _ensure_scope(stage, unit["graph_root"])
     tf_targets = [unit["frame_prim"] for unit in units]
-    parent = TF_PARENT_PRIM if (TF_PARENT_PRIM and
-                                stage.GetPrimAtPath(TF_PARENT_PRIM).IsValid()) else ""
+    # explicit override if set + valid; otherwise auto-find the robot base link
+    # (near the cameras) so the parent isn't a hardcoded scene path.
+    if TF_PARENT_PRIM and stage.GetPrimAtPath(TF_PARENT_PRIM).IsValid():
+        parent = TF_PARENT_PRIM
+    else:
+        parent = _find_base_link(stage, TF_PARENT_LINK,
+                                 units[0]["root"] if units else "")
     if parent:
+        print(f"  [tf] parent link -> {parent}  (frame '{TF_WORLD_FRAME}')")
         _set_frame_name(stage, parent, TF_WORLD_FRAME)
+    else:
+        print(f"  [tf] no '{TF_PARENT_LINK}' found -> frames are world-relative")
     _setup_shared(tf_targets, parent)
 
     # ── STEP 7 — Per-unit camera graphs ──────────────────────────────────────
