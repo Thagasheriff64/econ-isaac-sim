@@ -412,29 +412,40 @@ def _og_edit(graph_path: str, spec: dict, label: str) -> bool:
 
 
 def _setup_shared(tf_targets: list, parent_prim: str = ""):
-    """Build the once-per-scene graph publishing ``/clock`` and ``/tf``."""
+    """Build the once-per-scene graph publishing ``/clock`` and ``/tf``.
+
+    TF uses the supported IsaacComputeTransformTree -> ROS2PublishTransformTree
+    chain (not the publisher's deprecated ``targetPrims`` input, which spams
+    "getObjectType eInvalid" for plain Xform frames).
+    """
     values = [
-        ("Ctx.inputs:domain_id",   ROS2_DOMAIN_ID),
-        ("Clock.inputs:topicName", "/clock"),
-        ("TF.inputs:topicName",    "/tf"),
-        ("TF.inputs:targetPrims",  tf_targets),
+        ("Ctx.inputs:domain_id",         ROS2_DOMAIN_ID),
+        ("Clock.inputs:topicName",       "/clock"),
+        ("TF.inputs:topicName",          "/tf"),
+        ("ComputeTF.inputs:targetPrims", tf_targets),
     ]
     if parent_prim:
-        values.append(("TF.inputs:parentPrim", [parent_prim]))
+        values.append(("ComputeTF.inputs:parentPrim", [parent_prim]))
 
     _og_edit(f"{GRAPH_ROOT}/ROS2SharedGraph", {
         og.Controller.Keys.CREATE_NODES: [
-            ("OnTick",  "omni.graph.action.OnPlaybackTick"),
-            ("Ctx",     "isaacsim.ros2.bridge.ROS2Context"),
-            ("SimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
-            ("Clock",   "isaacsim.ros2.bridge.ROS2PublishClock"),
-            ("TF",      "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
+            ("OnTick",    "omni.graph.action.OnPlaybackTick"),
+            ("Ctx",       "isaacsim.ros2.bridge.ROS2Context"),
+            ("SimTime",   "isaacsim.core.nodes.IsaacReadSimulationTime"),
+            ("Clock",     "isaacsim.ros2.bridge.ROS2PublishClock"),
+            ("ComputeTF", "isaacsim.core.nodes.IsaacComputeTransformTree"),
+            ("TF",        "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
         ],
         og.Controller.Keys.CONNECT: [
             ("OnTick.outputs:tick",            "Clock.inputs:execIn"),
             ("SimTime.outputs:simulationTime", "Clock.inputs:timeStamp"),
             ("Ctx.outputs:context",            "Clock.inputs:context"),
-            ("OnTick.outputs:tick",            "TF.inputs:execIn"),
+            ("OnTick.outputs:tick",            "ComputeTF.inputs:execIn"),
+            ("ComputeTF.outputs:execOut",      "TF.inputs:execIn"),
+            ("ComputeTF.outputs:parentFrames", "TF.inputs:parentFrames"),
+            ("ComputeTF.outputs:childFrames",  "TF.inputs:childFrames"),
+            ("ComputeTF.outputs:translations", "TF.inputs:translations"),
+            ("ComputeTF.outputs:orientations", "TF.inputs:orientations"),
             ("Ctx.outputs:context",            "TF.inputs:context"),
             ("SimTime.outputs:simulationTime", "TF.inputs:timeStamp"),
         ],
