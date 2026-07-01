@@ -69,8 +69,7 @@ TF_PARENT_LINK = "base_link"   # prim name to auto-search for when TF_PARENT_PRI
 
 
 # --- IMU ----------------------------------------------------------------------
-IMU_READ_GRAVITY = True     # True  -> realistic accel incl. gravity (~9.81 g at
-                            #          rest, like the real ISM330DHCX)
+IMU_READ_GRAVITY = False    # True  -> realistic accel incl. gravity (~9.81 g at rest)
                             # False -> motion-only acceleration (0 at rest)
 
 # On-screen IMU readout — 3 settings.  Keep IMU_PRINT_CAMERAS to a single camera;
