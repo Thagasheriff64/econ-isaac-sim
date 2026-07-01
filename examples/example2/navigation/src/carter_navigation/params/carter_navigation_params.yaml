@@ -46,7 +46,7 @@ amcl:
       x: 0.0
       y: 0.0
       z: 0.0
-      yaw: 0.0
+      yaw: 3.14159      # robot spawns 180 deg about Z in Isaac vs the map frame
 
 amcl_map_client:
   ros__parameters:
