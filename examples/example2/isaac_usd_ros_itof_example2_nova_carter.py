@@ -62,8 +62,12 @@ TOPIC_ROOT     = "/tof"     # root namespace for all camera/imu topics
 # TF_PARENT_PRIM = ""         # "" -> frames are world-relative.  Set a prim path
 #                             # (e.g. a robot base) to parent all frames under it;
 #                             # that prim is then named TF_WORLD_FRAME.
-TF_PARENT_PRIM = "/World/Nova_Carter_ROS/chassis_link"   # the base the cameras are mounted on
+TF_PARENT_PRIM = "/World/Nova_Carter_ROS_econ_iToF/chassis_link/base_link"  # the robot's REAL base_link
 TF_WORLD_FRAME = "base_link"                              # match the Carter's base frame name
+# NOTE: parent must be the actual base_link prim, NOT chassis_link -- naming
+# chassis_link "base_link" creates a 2nd base_link (the Carter already owns one
+# via odom) and yields a base_link->base_link TF_SELF_TRANSFORM / cycle.
+
 
 
 # --- IMU ----------------------------------------------------------------------
@@ -1143,9 +1147,11 @@ async def main():
                 graph_path = f"{graph_root}/ROS2Camera_{graph_tag}_{key.upper()}",
             )
 
-        # One TF frame per unit, anchored on the highres camera (optical centre);
-        # every topic of the unit tags it, and only it is published to TF.
-        frame_prim = cams.get("highres", next(iter(cams.values())))["path"]
+        # One TF frame per unit, anchored on the camera's CameraFrame Xform (the
+        # parent of the Camera prim -- a Camera itself is not a valid pose-tree
+        # object, so publishing it gives "getObjectType eInvalid").
+        cam_prim   = cams.get("highres", next(iter(cams.values())))["path"]
+        frame_prim = cam_prim.rsplit("/", 1)[0]
         _set_frame_name(stage, frame_prim, unit_id)
 
         imu_prim = _find_imu(stage, root)

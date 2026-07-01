@@ -1133,9 +1133,11 @@ async def main():
                 graph_path = f"{graph_root}/ROS2Camera_{graph_tag}_{key.upper()}",
             )
 
-        # One TF frame per unit, anchored on the highres camera (optical centre);
-        # every topic of the unit tags it, and only it is published to TF.
-        frame_prim = cams.get("highres", next(iter(cams.values())))["path"]
+        # One TF frame per unit, anchored on the camera's CameraFrame Xform (the
+        # parent of the Camera prim -- a Camera itself is not a valid pose-tree
+        # object, so publishing it gives "getObjectType eInvalid").
+        cam_prim   = cams.get("highres", next(iter(cams.values())))["path"]
+        frame_prim = cam_prim.rsplit("/", 1)[0]
         _set_frame_name(stage, frame_prim, unit_id)
 
         imu_prim = _find_imu(stage, root)
