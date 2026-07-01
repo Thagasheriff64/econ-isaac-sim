@@ -30,9 +30,7 @@ def generate_launch_description():
     map_dir = LaunchConfiguration(
         "map",
         default=os.path.join(
-            # get_package_share_directory("carter_navigation"), "maps", "carter_warehouse_navigation.yaml"
-            get_package_share_directory("carter_navigation"), "maps", "full_warehouse_nova_carter.yaml"
-
+            get_package_share_directory("carter_navigation"), "maps", "carter_warehouse_navigation.yaml"
         ),
     )
 
@@ -64,17 +62,6 @@ def generate_launch_description():
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([nav2_bringup_launch_dir, "/bringup_launch.py"]),
                 launch_arguments={"map": map_dir, "use_sim_time": use_sim_time, "params_file": param_dir}.items(),
-            ),
-
-            # Static map -> odom (identity). NOTE: AMCL also broadcasts map->odom;
-            # disable AMCL's tf_broadcast (or drop amcl) to avoid two publishers.
-            Node(
-                package="tf2_ros", executable="static_transform_publisher",
-                name="map_to_odom_static_tf",
-                arguments=["--x", "0", "--y", "0", "--z", "0",
-                           "--yaw", "0", "--pitch", "0", "--roll", "0",
-                           "--frame-id", "map", "--child-frame-id", "odom"],
-                parameters=[{"use_sim_time": use_sim_time}],
             ),
 
             Node(
