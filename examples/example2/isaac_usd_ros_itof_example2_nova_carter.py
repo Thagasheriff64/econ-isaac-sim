@@ -1147,11 +1147,18 @@ async def main():
                 graph_path = f"{graph_root}/ROS2Camera_{graph_tag}_{key.upper()}",
             )
 
-        # One TF frame per unit, anchored on the camera's CameraFrame Xform (the
-        # parent of the Camera prim -- a Camera itself is not a valid pose-tree
-        # object, so publishing it gives "getObjectType eInvalid").
-        cam_prim   = cams.get("highres", next(iter(cams.values())))["path"]
-        frame_prim = cam_prim.rsplit("/", 1)[0]
+        # One TF frame per unit at the camera's pose.  A Camera prim can't be a TF
+        # target (getObjectType eInvalid), and its parent CameraFrame lacks the
+        # camera's local orientation (clouds then come out rotated / pointing up).
+        # So author a plain Xform that COPIES the Camera's local transform and
+        # publish THAT as the unit frame.
+        cam_prim_path = cams.get("highres", next(iter(cams.values())))["path"]
+        cam_prim      = stage.GetPrimAtPath(cam_prim_path)
+        frame_prim    = cam_prim_path.rsplit("/", 1)[0] + f"/{unit_id}_frame"
+        _fx = UsdGeom.Xform.Define(stage, frame_prim)
+        _fx.ClearXformOpOrder()
+        _fx.AddTransformOp().Set(
+            UsdGeom.Xformable(cam_prim).GetLocalTransformation(Usd.TimeCode.Default()))
         _set_frame_name(stage, frame_prim, unit_id)
 
         imu_prim = _find_imu(stage, root)
