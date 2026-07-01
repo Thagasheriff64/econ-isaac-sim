@@ -1133,22 +1133,9 @@ async def main():
                 graph_path = f"{graph_root}/ROS2Camera_{graph_tag}_{key.upper()}",
             )
 
-        # One TF frame per unit at the camera's pose.  A Camera prim can't be a TF
-        # target (getObjectType eInvalid), and its parent CameraFrame lacks the
-        # camera's local orientation (clouds then come out rotated / pointing up).
-        # So author a plain Xform that COPIES the Camera's local transform and
-        # publish THAT as the unit frame.
-        cam_prim_path = cams.get("highres", next(iter(cams.values())))["path"]
-        cam_prim      = stage.GetPrimAtPath(cam_prim_path)
-        frame_prim    = cam_prim_path.rsplit("/", 1)[0] + f"/{unit_id}_frame"
-        _cam_local = UsdGeom.Xformable(cam_prim).GetLocalTransformation(Usd.TimeCode.Default())
-        # USD camera looks down -Z (Y up); Isaac publishes the cloud in the ROS
-        # optical frame (+Z forward, Y down).  Rotate 180deg about X so the cloud
-        # lands the right way up instead of flipped.
-        _opt = Gf.Matrix4d().SetRotate(Gf.Rotation(Gf.Vec3d(1, 0, 0), 180.0))
-        _fx = UsdGeom.Xform.Define(stage, frame_prim)
-        _fx.ClearXformOpOrder()
-        _fx.AddTransformOp().Set(_opt * _cam_local)
+        # One TF frame per unit, anchored on the highres camera (optical centre);
+        # every topic of the unit tags it, and only it is published to TF.
+        frame_prim = cams.get("highres", next(iter(cams.values())))["path"]
         _set_frame_name(stage, frame_prim, unit_id)
 
         imu_prim = _find_imu(stage, root)

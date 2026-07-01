@@ -1155,14 +1155,10 @@ async def main():
         cam_prim_path = cams.get("highres", next(iter(cams.values())))["path"]
         cam_prim      = stage.GetPrimAtPath(cam_prim_path)
         frame_prim    = cam_prim_path.rsplit("/", 1)[0] + f"/{unit_id}_frame"
-        _cam_local = UsdGeom.Xformable(cam_prim).GetLocalTransformation(Usd.TimeCode.Default())
-        # USD camera looks down -Z (Y up); Isaac publishes the cloud in the ROS
-        # optical frame (+Z forward, Y down).  Rotate 180deg about X so the cloud
-        # lands the right way up instead of flipped.
-        _opt = Gf.Matrix4d().SetRotate(Gf.Rotation(Gf.Vec3d(1, 0, 0), 180.0))
         _fx = UsdGeom.Xform.Define(stage, frame_prim)
         _fx.ClearXformOpOrder()
-        _fx.AddTransformOp().Set(_opt * _cam_local)
+        _fx.AddTransformOp().Set(
+            UsdGeom.Xformable(cam_prim).GetLocalTransformation(Usd.TimeCode.Default()))
         _set_frame_name(stage, frame_prim, unit_id)
 
         imu_prim = _find_imu(stage, root)

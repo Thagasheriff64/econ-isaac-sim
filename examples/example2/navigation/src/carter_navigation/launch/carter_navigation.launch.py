@@ -66,6 +66,17 @@ def generate_launch_description():
                 launch_arguments={"map": map_dir, "use_sim_time": use_sim_time, "params_file": param_dir}.items(),
             ),
 
+            # Static map -> odom (identity). NOTE: AMCL also broadcasts map->odom;
+            # disable AMCL's tf_broadcast (or drop amcl) to avoid two publishers.
+            Node(
+                package="tf2_ros", executable="static_transform_publisher",
+                name="map_to_odom_static_tf",
+                arguments=["--x", "0", "--y", "0", "--z", "0",
+                           "--yaw", "0", "--pitch", "0", "--roll", "0",
+                           "--frame-id", "map", "--child-frame-id", "odom"],
+                parameters=[{"use_sim_time": use_sim_time}],
+            ),
+
             Node(
                 package='pointcloud_to_laserscan', executable='pointcloud_to_laserscan_node',
                 remappings=[('cloud_in', ['/front_3d_lidar/lidar_points']),
