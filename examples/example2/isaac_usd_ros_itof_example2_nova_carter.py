@@ -97,7 +97,7 @@ STOP_SIM_ON_EXIT = True     # True  -> Ctrl+Alt+R / teardown() also stops the
 # It runs alongside ROS 2 (purely additive) and lets you inspect depth without
 # RViz: open the printed URL to see each camera's colour-mapped depth (with a
 # distance probe) and interactive point clouds.  No dependency beyond NumPy.
-WEB_VIEWER       = True     # True -> start the localhost viewer
+WEB_VIEWER       = False    # True -> start the localhost viewer (extra render products; off for FPS)
 WEB_VIEWER_PORT  = 8211      # served at http://localhost:<port>/
 WEB_VIEWER_HZ    = 10        # frame refresh rate (Hz)
 WEB_VIEWER_MAX_W = None      # None -> camera's full (original) resolution; set e.g.
@@ -140,6 +140,10 @@ def _make_params(fx: float, width: int, height: int,
 # found).  ``params`` are only a FALLBACK — the node reads the real intrinsics,
 # resolution and depth range from each camera's authored attributes at runtime
 # (see _read_cam_params).  Prim names are identical in the GMSL/USB builds.
+# Which streams to publish per unit -> fewer render products = higher sim FPS.
+# "both" | "longrange" | "highres".  ("longrange" is what the Nav2 costmap uses.)
+PUBLISH_STREAMS = "longrange"
+
 _CAMERA_CONFIGS = {
     "highres": {
         "prim_name": "econ_iToF_highResolution",
@@ -1147,7 +1151,9 @@ async def main():
         graph_root = f"{GRAPH_ROOT}/{unit_id}" if multi else GRAPH_ROOT
 
         cams = {}
-        for key, cfg in _CAMERA_CONFIGS.items():
+        _configs = (_CAMERA_CONFIGS if PUBLISH_STREAMS == "both"
+                    else {k: v for k, v in _CAMERA_CONFIGS.items() if k == PUBLISH_STREAMS})
+        for key, cfg in _configs.items():
             cam_path = _find_camera(stage, root, cfg["prim_name"])
             if cam_path is None:
                 print(f"[FATAL] Camera '{cfg['prim_name']}' not found in {root}.")
