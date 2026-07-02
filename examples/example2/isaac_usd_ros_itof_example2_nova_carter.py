@@ -58,13 +58,9 @@ except ImportError:
 # --- ROS 2 / TF ---------------------------------------------------------------
 ROS2_DOMAIN_ID = 0          # must match ROS_DOMAIN_ID in your shell
 TOPIC_ROOT     = "/tof"     # root namespace for all camera/imu topics
-TF_WORLD_FRAME = "base_link"   # published parent frame (RViz Fixed Frame); cameras hang off it
-TF_PARENT_PRIM = ""            # "" -> auto-find the robot base link (TF_PARENT_LINK) so the
-                               # parent isn't a hardcoded scene path.  Set a prim path to override.
-TF_PARENT_LINK = "base_link"   # prim name to auto-search for when TF_PARENT_PRIM == ""
-# NOTE: the parent must be the actual base_link prim, NOT chassis_link -- naming
-# chassis_link "base_link" creates a 2nd base_link (the Carter already owns one
-# via odom) and yields a base_link->base_link TF_SELF_TRANSFORM / cycle.
+TF_WORLD_FRAME = "base_link"   # published parent frame (RViz Fixed Frame)
+TF_PARENT_PRIM = ""            # "" -> auto-find TF_PARENT_LINK; set a prim path to override
+TF_PARENT_LINK = "base_link"   # parent must be the real base_link prim, not chassis_link
 
 
 
@@ -211,7 +207,6 @@ def _find_camera(stage, unit_root: str, prim_name: str) -> "str | None":
     """
     direct = f"{unit_root}/ToF_Camera/CameraFrame/{prim_name}"
     if stage.GetPrimAtPath(direct).IsValid():
-        print(f"  [find] {prim_name:32s} -> {direct}")
         return direct
 
     root_prim = stage.GetPrimAtPath(unit_root)
@@ -219,7 +214,6 @@ def _find_camera(stage, unit_root: str, prim_name: str) -> "str | None":
         for prim in Usd.PrimRange(root_prim):
             if (prim.IsA(UsdGeom.Camera) and prim.GetName() == prim_name
                     and not _is_skipped(prim)):
-                print(f"  [find] {prim_name:32s} -> {prim.GetPath()}")
                 return str(prim.GetPath())
 
     print(f"  [find] ERROR: '{prim_name}' not found under {unit_root}.")
@@ -308,10 +302,7 @@ def _set_frame_name(stage, prim_path: str, name: str):
 
 
 def _find_base_link(stage, link_name: str = "base_link", near_path: str = "") -> str:
-    """Auto-find the robot base-link prim (default 'base_link') so the camera TF
-    parent isn't a hardcoded scene path.  When several prims share the name, pick
-    the one whose path overlaps ``near_path`` most (the same robot as the cameras).
-    """
+    """Auto-find the base-link prim; on name clashes pick the one nearest near_path."""
     cands = [p.GetPath().pathString for p in stage.Traverse()
              if p.GetName() == link_name]
     if not cands:
@@ -411,12 +402,8 @@ def _og_edit(graph_path: str, spec: dict, label: str) -> bool:
 
 
 def _setup_shared(tf_targets: list, parent_prim: str = ""):
-    """Build the once-per-scene graph publishing ``/clock`` and ``/tf``.
-
-    TF uses the supported IsaacComputeTransformTree -> ROS2PublishTransformTree
-    chain (not the publisher's deprecated ``targetPrims`` input, which spams
-    "getObjectType eInvalid" for plain Xform frames).
-    """
+    """Once-per-scene graph: /clock + /tf (ComputeTransformTree -> PublishTransformTree,
+    the supported chain; the publisher's targetPrims input is deprecated)."""
     values = [
         ("Ctx.inputs:domain_id",         ROS2_DOMAIN_ID),
         ("Clock.inputs:topicName",       "/clock"),
@@ -1176,18 +1163,13 @@ async def main():
                 graph_path = f"{graph_root}/ROS2Camera_{graph_tag}_{key.upper()}",
             )
 
-        # One TF frame per unit at the camera's pose.  A Camera prim can't be a TF
-        # target (getObjectType eInvalid), and its parent CameraFrame lacks the
-        # camera's local orientation (clouds then come out rotated / pointing up).
-        # So author a plain Xform that COPIES the Camera's local transform and
-        # publish THAT as the unit frame.
+        # Per-unit TF frame: a plain Xform copying the Camera's local pose (a Camera
+        # prim itself is not a valid TF target -> eInvalid).
         cam_prim_path = cams.get("highres", next(iter(cams.values())))["path"]
         cam_prim      = stage.GetPrimAtPath(cam_prim_path)
         frame_prim    = cam_prim_path.rsplit("/", 1)[0] + f"/{unit_id}_frame"
         _cam_local = UsdGeom.Xformable(cam_prim).GetLocalTransformation(Usd.TimeCode.Default())
-        # USD camera looks down -Z (Y up); Isaac publishes the cloud in the ROS
-        # optical frame (+Z forward, Y down).  Rotate 180deg about X so the cloud
-        # lands the right way up instead of flipped.
+        # 180deg about X: USD camera (-Z view, Y up) -> ROS optical (+Z fwd, Y down)
         _opt = Gf.Matrix4d().SetRotate(Gf.Rotation(Gf.Vec3d(1, 0, 0), 180.0))
         _fx = UsdGeom.Xform.Define(stage, frame_prim)
         _fx.ClearXformOpOrder()
@@ -1283,35 +1265,20 @@ async def main():
 
 
 def _print_summary(units: list):
-    """Print the active topics, frames and controls."""
+    """Print active topics, frames and controls (compact)."""
     n_graphs = 1 + sum(len(u["cams"]) + (1 if u["imu_ok"] else 0) for u in units)
-    overlay_axes = "+".join(a for a, on in (("angVel", IMU_ANGULAR_TO_SCREEN),
-                                            ("linAcc", IMU_LINEAR_TO_SCREEN)) if on)
-
-    print("\n" + "--" * 72)
-    print(f"  ROS 2 ACTIVE  -  {len(units)} unit(s), {n_graphs} graphs\n")
-    for unit in units:
-        print(f"  ── UNIT {unit['unit_id']}   frame={unit['unit_id']} -> "
-              f"{TF_WORLD_FRAME}   ({unit['root']})")
-        for cam in unit["cams"].values():
-            ns, p = cam["topic_ns"], cam["params"]
-            print(f"     {ns}/depth         32FC1 metres")
-            print(f"     {ns}/camera_info   CameraInfo")
-            print(f"     {ns}/points        PointCloud2   "
-                  f"(fx={p['fx']:.1f}  {p['near_m']}-{p['far_m']} m)")
-        if unit["imu_ok"]:
-            tag = (f"   (+viewport: {overlay_axes})"
-                   if unit["imu_print"] and overlay_axes else "")
-            print(f"     {unit['imu_topic']:<22} Imu 416 Hz{tag}")
-        print()
-    print(f"  {GRAPH_ROOT}/ROS2SharedGraph  ->  /clock  /tf   "
-          f"(all unit frames -> {TF_WORLD_FRAME})")
-    print()
-    print("  RViz depth: Normalize=OFF  highres 0.2-2.0 | longrange 0.5-6.0")
+    print("\n" + "-" * 96)
+    print(f"  ROS 2 ACTIVE  -  {len(units)} unit(s), {n_graphs} graphs")
+    for u in units:
+        ns  = f"{TOPIC_ROOT}/{u['unit_id']}"
+        imu = "  +imu" if u["imu_ok"] else ""
+        print(f"    {u['unit_id']:8s} -> {TF_WORLD_FRAME}   "
+              f"{ns}/{{highres,longrange}}/{{depth,camera_info,points}}{imu}")
+    print(f"    /clock  /tf   (unit frames -> {TF_WORLD_FRAME})")
     if WEB_VIEWER and _web_viewer is not None:
-        print(f"  Web viewer: http://localhost:{WEB_VIEWER_PORT}/  (live depth, no RViz needed)")
+        print(f"    web viewer: http://localhost:{WEB_VIEWER_PORT}/")
     print("  Stop: Ctrl+Alt+R (viewport focused) or teardown()")
-    print("--" * 72 + "\n")
+    print("-" * 96 + "\n")
 
 
 # ══════════════════════════════════════════════════════════════════════════════

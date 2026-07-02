@@ -201,7 +201,6 @@ def _find_camera(stage, unit_root: str, prim_name: str) -> "str | None":
     """
     direct = f"{unit_root}/ToF_Camera/CameraFrame/{prim_name}"
     if stage.GetPrimAtPath(direct).IsValid():
-        print(f"  [find] {prim_name:32s} -> {direct}")
         return direct
 
     root_prim = stage.GetPrimAtPath(unit_root)
@@ -209,7 +208,6 @@ def _find_camera(stage, unit_root: str, prim_name: str) -> "str | None":
         for prim in Usd.PrimRange(root_prim):
             if (prim.IsA(UsdGeom.Camera) and prim.GetName() == prim_name
                     and not _is_skipped(prim)):
-                print(f"  [find] {prim_name:32s} -> {prim.GetPath()}")
                 return str(prim.GetPath())
 
     print(f"  [find] ERROR: '{prim_name}' not found under {unit_root}.")
@@ -1219,35 +1217,20 @@ async def main():
 
 
 def _print_summary(units: list):
-    """Print the active topics, frames and controls."""
+    """Print active topics, frames and controls (compact)."""
     n_graphs = 1 + sum(len(u["cams"]) + (1 if u["imu_ok"] else 0) for u in units)
-    overlay_axes = "+".join(a for a, on in (("angVel", IMU_ANGULAR_TO_SCREEN),
-                                            ("linAcc", IMU_LINEAR_TO_SCREEN)) if on)
-
-    print("\n" + "--" * 72)
-    print(f"  ROS 2 ACTIVE  -  {len(units)} unit(s), {n_graphs} graphs\n")
-    for unit in units:
-        print(f"  ── UNIT {unit['unit_id']}   frame={unit['unit_id']} -> "
-              f"{TF_WORLD_FRAME}   ({unit['root']})")
-        for cam in unit["cams"].values():
-            ns, p = cam["topic_ns"], cam["params"]
-            print(f"     {ns}/depth         32FC1 metres")
-            print(f"     {ns}/camera_info   CameraInfo")
-            print(f"     {ns}/points        PointCloud2   "
-                  f"(fx={p['fx']:.1f}  {p['near_m']}-{p['far_m']} m)")
-        if unit["imu_ok"]:
-            tag = (f"   (+viewport: {overlay_axes})"
-                   if unit["imu_print"] and overlay_axes else "")
-            print(f"     {unit['imu_topic']:<22} Imu 416 Hz{tag}")
-        print()
-    print(f"  {GRAPH_ROOT}/ROS2SharedGraph  ->  /clock  /tf   "
-          f"(all unit frames -> {TF_WORLD_FRAME})")
-    print()
-    print("  RViz depth: Normalize=OFF  highres 0.2-2.0 | longrange 0.5-6.0")
+    print("\n" + "-" * 96)
+    print(f"  ROS 2 ACTIVE  -  {len(units)} unit(s), {n_graphs} graphs")
+    for u in units:
+        ns  = f"{TOPIC_ROOT}/{u['unit_id']}"
+        imu = "  +imu" if u["imu_ok"] else ""
+        print(f"    {u['unit_id']:8s} -> {TF_WORLD_FRAME}   "
+              f"{ns}/{{highres,longrange}}/{{depth,camera_info,points}}{imu}")
+    print(f"    /clock  /tf   (unit frames -> {TF_WORLD_FRAME})")
     if WEB_VIEWER and _web_viewer is not None:
-        print(f"  Web viewer: http://localhost:{WEB_VIEWER_PORT}/  (live depth, no RViz needed)")
+        print(f"    web viewer: http://localhost:{WEB_VIEWER_PORT}/")
     print("  Stop: Ctrl+Alt+R (viewport focused) or teardown()")
-    print("--" * 72 + "\n")
+    print("-" * 96 + "\n")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
