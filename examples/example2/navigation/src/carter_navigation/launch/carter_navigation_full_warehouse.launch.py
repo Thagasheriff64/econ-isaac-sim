@@ -94,7 +94,7 @@ def generate_launch_description():
                     'range_max': 100.0,
                     'use_inf': True,
                     'inf_epsilon': 1.0,
-                    # 'concurrency_level': 1,
+                    'concurrency_level': 4,  # multi-thread the 360 deg scan conversion (use free cores)
                 }],
                 name='pointcloud_to_laserscan'
             )
