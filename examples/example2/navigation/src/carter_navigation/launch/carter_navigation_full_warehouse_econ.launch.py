@@ -21,9 +21,7 @@ from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from launch.actions import RegisterEventHandler, ExecuteProcess
-from launch.event_handlers import OnProcessStart, OnProcessIO
-from launch.substitutions import FindExecutable
+
 
 def generate_launch_description():
 
@@ -32,14 +30,16 @@ def generate_launch_description():
     map_dir = LaunchConfiguration(
         "map",
         default=os.path.join(
-            get_package_share_directory("carter_navigation"), "maps", "carter_warehouse_navigation.yaml"
+            # get_package_share_directory("carter_navigation"), "maps", "carter_warehouse_navigation.yaml"
+            get_package_share_directory("carter_navigation"), "maps", "full_warehouse_nova_carter_econ.yaml"
+
         ),
     )
 
     param_dir = LaunchConfiguration(
         "params_file",
         default=os.path.join(
-            get_package_share_directory("carter_navigation"), "params", "carter_navigation_params.yaml"
+            get_package_share_directory("carter_navigation"), "params", "carter_navigation_params_full_warehouse_nova_carter.yaml"
         ),
     )
 
@@ -48,47 +48,8 @@ def generate_launch_description():
 
     rviz_config_dir = os.path.join(get_package_share_directory("carter_navigation"), "rviz2", "carter_navigation.rviz")
 
-    ld_automatic_goal = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-                    get_package_share_directory("isaac_ros_navigation_goal"), "launch", "isaac_ros_navigation_goal.launch.py"
-                ),
-            ]
-        ),
-    )
-
-    
-
-    def execute_second_node_if_condition_met(event, second_node_action):
-        output = event.text.decode().strip()
-        # Look for fully loaded message from Isaac Sim. Only applicable in Gui mode.
-        if "Stage loaded and simulation is playing." in output:
-            # Log a message indicating the condition has been met
-            print("Condition met, launching the second node.")
-            
-            # If Nav2 takes additional time to initialize, uncomment the lines below to add a delay of 10 seconds (or any desired duration) before launching the second_node_action
-            # import time
-            # time.sleep(10)
-            return second_node_action
-
-
     return LaunchDescription(
         [
-            # Declaring the Isaac Sim scene path. 'gui' launch argument is already used withing run_isaac_sim.launch.py
-            DeclareLaunchArgument("gui", default_value='https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd', description="Path to isaac sim scene"),
-
-            # Include Isaac Sim launch file from isaacsim package with given launch parameters.
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource([os.path.join(
-                            get_package_share_directory("isaacsim_bringup"), "launch", "run_isaacsim.launch.py"
-                        ),
-                    ]
-                ),
-                launch_arguments={
-                    'version': '6.0.1',
-                    'play_sim_on_start': 'true',
-                }.items(),
-            ),
-            
             DeclareLaunchArgument("map", default_value=map_dir, description="Full path to map file to load"),
             DeclareLaunchArgument(
                 "params_file", default_value=param_dir, description="Full path to param file to load"
@@ -104,6 +65,18 @@ def generate_launch_description():
                 PythonLaunchDescriptionSource([nav2_bringup_launch_dir, "/bringup_launch.py"]),
                 launch_arguments={"map": map_dir, "use_sim_time": use_sim_time, "params_file": param_dir}.items(),
             ),
+
+            # Static map -> odom (identity). NOTE: AMCL also broadcasts map->odom;
+            # disable AMCL's tf_broadcast (or drop amcl) to avoid two publishers.
+            Node(
+                package="tf2_ros", executable="static_transform_publisher",
+                name="map_to_odom_static_tf",
+                arguments=["--x", "0", "--y", "0", "--z", "0",
+                           "--yaw", "0", "--pitch", "0", "--roll", "0",
+                           "--frame-id", "map", "--child-frame-id", "odom"],
+                parameters=[{"use_sim_time": use_sim_time}],
+            ),
+
             Node(
                 package='pointcloud_to_laserscan', executable='pointcloud_to_laserscan_node',
                 remappings=[('cloud_in', ['/front_3d_lidar/lidar_points']),
@@ -113,8 +86,8 @@ def generate_launch_description():
                     'transform_tolerance': 0.01,
                     'min_height': -0.4,
                     'max_height': 1.5,
-                    'angle_min': -1.5708,  # -M_PI/2
-                    'angle_max': 1.5708,  # M_PI/2
+                    'angle_min': -3.14159,  # -M_PI  (full 360 deg for localization)
+                    'angle_max': 3.14159,  # M_PI
                     'angle_increment': 0.0087,  # M_PI/360.0
                     'scan_time': 0.3333,
                     'range_min': 0.05,
@@ -124,13 +97,6 @@ def generate_launch_description():
                     # 'concurrency_level': 1,
                 }],
                 name='pointcloud_to_laserscan'
-            ),
-
-            # Launch automatic goal generator node when Isaac Sim has finished loading.
-            RegisterEventHandler(
-                OnProcessIO(
-                    on_stdout=lambda event: execute_second_node_if_condition_met(event, ld_automatic_goal)
-                )
-            ),
+            )
         ]
     )
