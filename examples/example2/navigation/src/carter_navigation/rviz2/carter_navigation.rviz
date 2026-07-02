@@ -5,12 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /TF1/Frames1
         - /TF1/Tree1
-        - /Controller1/Local Costmap1
-        - /Image1/Topic1
       Splitter Ratio: 0.5833333134651184
-    Tree Height: 318
+    Tree Height: 355
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -76,17 +73,7 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
-        All Enabled: false
-        ImuBody:
-          Value: true
-        Nova_Carter_ROS_ImuBody:
-          Value: true
-        back_2d_lidar:
-          Value: true
-        back_fisheye_camera:
-          Value: true
-        back_stereo_camera:
-          Value: true
+        All Enabled: true
         base_link:
           Value: true
         cam0:
@@ -107,33 +94,13 @@ Visualization Manager:
           Value: true
         chassis_imu:
           Value: true
-        front_2d_lidar:
-          Value: true
         front_3d_lidar:
           Value: true
-        front_fisheye_camera:
-          Value: true
-        front_stereo_camera:
-          Value: true
-        left_fisheye_camera:
-          Value: true
-        left_stereo_camera:
-          Value: true
         map:
-          Value: true
-        nova_carter:
-          Value: true
-        nova_carter_ImuBody:
           Value: true
         nova_carter_caster_frame_base:
           Value: true
         odom:
-          Value: true
-        right_fisheye_camera:
-          Value: true
-        right_stereo_camera:
-          Value: true
-        sensors_ImuBody:
           Value: true
         wheel_left:
           Value: true
@@ -148,12 +115,6 @@ Visualization Manager:
         map:
           odom:
             base_link:
-              back_2d_lidar:
-                {}
-              back_fisheye_camera:
-                {}
-              back_stereo_camera:
-                {}
               cam0:
                 {}
               cam1:
@@ -162,46 +123,23 @@ Visualization Manager:
                 {}
               cam3:
                 {}
-              chassis_imu:
+              caster_swivel_left:
                 {}
-              front_2d_lidar:
+              caster_swivel_right:
+                {}
+              caster_wheel_left:
+                {}
+              caster_wheel_right:
+                {}
+              chassis_imu:
                 {}
               front_3d_lidar:
                 {}
-              front_fisheye_camera:
+              nova_carter_caster_frame_base:
                 {}
-              front_stereo_camera:
+              wheel_left:
                 {}
-              left_fisheye_camera:
-                {}
-              left_stereo_camera:
-                {}
-              nova_carter:
-                ImuBody:
-                  {}
-                Nova_Carter_ROS_ImuBody:
-                  {}
-                caster_swivel_left:
-                  {}
-                caster_swivel_right:
-                  {}
-                caster_wheel_left:
-                  {}
-                caster_wheel_right:
-                  {}
-                nova_carter_ImuBody:
-                  {}
-                nova_carter_caster_frame_base:
-                  {}
-                sensors_ImuBody:
-                  {}
-                wheel_left:
-                  {}
-                wheel_right:
-                  {}
-              right_fisheye_camera:
-                {}
-              right_stereo_camera:
+              wheel_right:
                 {}
       Update Interval: 0
       Value: true
@@ -217,7 +155,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 0
@@ -238,7 +176,7 @@ Visualization Manager:
         Value: /scan
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -251,7 +189,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: ""
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -272,7 +210,7 @@ Visualization Manager:
         Value: /mobile_base/sensors/bumper_pointcloud
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz_default_plugins/Map
       Color Scheme: map
@@ -548,58 +486,74 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Controller
-    - Class: rviz_common/Group
-      Displays:
-        - Class: rviz_default_plugins/Image
-          Enabled: true
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: RealsenseCamera
-          Normalize Range: true
-          Topic:
-            Depth: 5
-            Durability Policy: Volatile
-            History Policy: Keep Last
-            Reliability Policy: Reliable
-            Value: /intel_realsense_r200_depth/image_raw
-          Value: true
-        - Alpha: 1
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz_default_plugins/PointCloud2
-          Color: 255; 255; 255
-          Color Transformer: RGB8
-          Decay Time: 0
-          Enabled: true
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: RealsenseDepthImage
-          Position Transformer: XYZ
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.009999999776482582
-          Style: Flat Squares
-          Topic:
-            Depth: 5
-            Durability Policy: Volatile
-            Filter size: 10
-            History Policy: Keep Last
-            Reliability Policy: Reliable
-            Value: /intel_realsense_r200_depth/points
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: true
-      Enabled: false
-      Name: Realsense
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: ""
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: /global_costmap/clearing_endpoints
+      Position Transformer: ""
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /global_costmap/clearing_endpoints
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: ""
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: /local_costmap/clearing_endpoints
+      Position Transformer: ""
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /local_costmap/clearing_endpoints
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
       Name: MarkerArray
@@ -615,8 +569,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 5.664282321929932
-        Min Value: -0.025530576705932617
+        Max Value: 8.969117164611816
+        Min Value: -0.037589311599731445
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -646,25 +600,11 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
-    - Class: rviz_default_plugins/Image
-      Enabled: false
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image
-      Normalize Range: true
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Best Effort
-        Value: /front_stereo_camera/left/image_raw
-      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 9.053679466247559
-        Min Value: 0.0024814605712890625
+        Max Value: 0.012748271226882935
+        Min Value: 0.00022369623184204102
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -678,7 +618,7 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: /tof/cam0/longrange/points
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
@@ -697,8 +637,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 5.457150936126709
-        Min Value: -0.00847366452217102
+        Max Value: 2.7745048999786377
+        Min Value: -0.007500559091567993
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -712,7 +652,7 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: /tof/cam1/longrange/points
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
@@ -731,8 +671,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 6.13718843460083
-        Min Value: -0.003848254680633545
+        Max Value: 0.007246673107147217
+        Min Value: -0.0026633739471435547
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -746,7 +686,7 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: /tof/cam2/longrange/points
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
@@ -765,8 +705,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 5.036128520965576
-        Min Value: 0.0006422698497772217
+        Max Value: 2.776306629180908
+        Min Value: -0.0020918548107147217
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -780,7 +720,7 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: /tof/cam3/longrange/points
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
@@ -795,6 +735,20 @@ Visualization Manager:
         Value: /tof/cam3/longrange/points
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Max Value: 6
+      Median window: 5
+      Min Value: 0.5
+      Name: /tof/cam1/longrange/depth
+      Normalize Range: false
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /tof/cam1/longrange/depth
       Value: true
   Enabled: true
   Global Options:
@@ -834,39 +788,37 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 48.37461853027344
+      Distance: 41.01778793334961
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 3.1523563861846924
-        Y: 2.620117664337158
-        Z: 0.4751352071762085
+        X: -9.017080307006836
+        Y: 2.76315975189209
+        Z: -0.19343823194503784
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6897965669631958
+      Pitch: 0.47479623556137085
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 6.272405624389648
+      Yaw: 4.732404708862305
     Saved: ~
 Window Geometry:
+  /tof/cam1/longrange/depth:
+    collapsed: false
   Displays:
     collapsed: false
   Height: 1029
   Hide Left Dock: false
   Hide Right Dock: true
-  Image:
-    collapsed: false
   Navigation 2:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd000000040000000000000288000003aafc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000003e0000017b000000cb00fffffffa000000010100000002fb0000000a0049006d0061006700650000000000ffffffff0000005d00fffffffb000000100044006900730070006c00610079007301000000000000016a0000015600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000018004e0061007600690067006100740069006f006e0020003201000001bf000002290000012600fffffffb0000001e005200650061006c00730065006e0073006500430061006d00650072006100000002c6000000c10000002800ffffff000000010000010f0000028afc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b0000028a000000a500fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b2000000000000000000000002000004ba00000094fc0100000002fb0000000a0049006d006100670065030000037d000002170000016c00000104fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004420000003efc0100000002fb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d00650100000000000004500000000000000000000004f2000003aa00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
-  RealsenseCamera:
-    collapsed: false
+  QMainWindow State: 000000ff00000000fd000000040000000000000288000003aafc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000003e000001a0000000cb00fffffffa000000010100000002fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb000000100044006900730070006c00610079007301000000000000016a0000015600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000018004e0061007600690067006100740069006f006e0020003201000001e4000001390000012600fffffffb0000001e005200650061006c00730065006e0073006500430061006d00650072006100000002c6000000c10000000000000000fb00000032002f0074006f0066002f00630061006d0031002f006c006f006e006700720061006e00670065002f006400650070007400680100000323000000c50000002800ffffff000000010000010f0000028afc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b0000028a000000a500fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b2000000000000000000000002000004ba00000094fc0100000002fb0000000a0049006d006100670065030000037d000002170000016c00000104fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004420000003efc0100000002fb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d00650100000000000004500000000000000000000004f2000003aa00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Tool Properties:
