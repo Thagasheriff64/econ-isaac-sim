@@ -201,8 +201,8 @@ controller_server_rclcpp_node:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 20.0
-      publish_frequency: 10.0
+      update_frequency: 5.0
+      publish_frequency: 2.0
       footprint_padding: 0.25
       global_frame: odom
       robot_base_frame: base_link
@@ -234,9 +234,9 @@ local_costmap:
           topic: /tof/cam0/longrange/points
           max_obstacle_height: 2.0
           min_obstacle_height: 0.1                 # skip floor returns
-          obstacle_max_range: 6.0
+          obstacle_max_range: 4.0
           obstacle_min_range: 0.0
-          raytrace_max_range: 6.0
+          raytrace_max_range: 4.0
           raytrace_min_range: 0.0
           clearing: True
           marking: True
@@ -245,9 +245,9 @@ local_costmap:
           topic: /tof/cam1/longrange/points
           max_obstacle_height: 2.0
           min_obstacle_height: 0.1
-          obstacle_max_range: 6.0
+          obstacle_max_range: 4.0
           obstacle_min_range: 0.0
-          raytrace_max_range: 6.0
+          raytrace_max_range: 4.0
           raytrace_min_range: 0.0
           clearing: True
           marking: True
@@ -256,9 +256,9 @@ local_costmap:
           topic: /tof/cam2/longrange/points
           max_obstacle_height: 2.0
           min_obstacle_height: 0.1
-          obstacle_max_range: 6.0
+          obstacle_max_range: 4.0
           obstacle_min_range: 0.0
-          raytrace_max_range: 6.0
+          raytrace_max_range: 4.0
           raytrace_min_range: 0.0
           clearing: True
           marking: True
@@ -267,9 +267,9 @@ local_costmap:
           topic: /tof/cam3/longrange/points
           max_obstacle_height: 2.0
           min_obstacle_height: 0.1
-          obstacle_max_range: 6.0
+          obstacle_max_range: 4.0
           obstacle_min_range: 0.0
-          raytrace_max_range: 6.0
+          raytrace_max_range: 4.0
           raytrace_min_range: 0.0
           clearing: True
           marking: True
@@ -287,8 +287,8 @@ global_costmap:
   global_costmap:
     ros__parameters:
       footprint_padding: 0.25
-      update_frequency: 5.0
-      publish_frequency: 2.0
+      update_frequency: 2.0
+      publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
       use_sim_time: True
@@ -315,9 +315,9 @@ global_costmap:
           topic: /tof/cam0/longrange/points
           max_obstacle_height: 2.0
           min_obstacle_height: 0.1
-          obstacle_max_range: 6.0
+          obstacle_max_range: 4.0
           obstacle_min_range: 0.0
-          raytrace_max_range: 6.0
+          raytrace_max_range: 4.0
           raytrace_min_range: 0.0
           clearing: True
           marking: True
@@ -326,9 +326,9 @@ global_costmap:
           topic: /tof/cam1/longrange/points
           max_obstacle_height: 2.0
           min_obstacle_height: 0.1
-          obstacle_max_range: 6.0
+          obstacle_max_range: 4.0
           obstacle_min_range: 0.0
-          raytrace_max_range: 6.0
+          raytrace_max_range: 4.0
           raytrace_min_range: 0.0
           clearing: True
           marking: True
@@ -337,9 +337,9 @@ global_costmap:
           topic: /tof/cam2/longrange/points
           max_obstacle_height: 2.0
           min_obstacle_height: 0.1
-          obstacle_max_range: 6.0
+          obstacle_max_range: 4.0
           obstacle_min_range: 0.0
-          raytrace_max_range: 6.0
+          raytrace_max_range: 4.0
           raytrace_min_range: 0.0
           clearing: True
           marking: True
@@ -348,9 +348,9 @@ global_costmap:
           topic: /tof/cam3/longrange/points
           max_obstacle_height: 2.0
           min_obstacle_height: 0.1
-          obstacle_max_range: 6.0
+          obstacle_max_range: 4.0
           obstacle_min_range: 0.0
-          raytrace_max_range: 6.0
+          raytrace_max_range: 4.0
           raytrace_min_range: 0.0
           clearing: True
           marking: True
